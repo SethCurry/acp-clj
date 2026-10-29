@@ -14,7 +14,23 @@
   "Malli schemas for the Agent Client Protocol.
 
   Generated from acp/schema.json by `acp.schema-tools`."
-  (:require [acp.schema-runtime :as rt]))
+  (:require [acp.schema-runtime :as rt]
+          [malli.core :as m]
+          [malli.error :as me]))
+
+;; ---------------------------------------------------------------------------
+;; Validation
+;; ---------------------------------------------------------------------------
+
+(defn validate!
+"Validate `value` against `schema`, returning `value` when valid or throwing
+an `ex-info` with a human-readable malli error explanation otherwise."
+[schema value what]
+(if-let [errors (and schema (m/explain schema value))]
+  (let [explained (me/humanize errors)]
+    (throw (ex-info (str "Invalid " what ": " (pr-str explained))
+                    {:schema schema :value value :errors errors})))
+  value))
 
 ;; The protocol defines a type named `Error`, so drop java.lang's
 ;; automatic class mapping before it becomes a var.
@@ -220,9 +236,11 @@
    "switch_mode"
    "other"])
 
-(def ->ToolKind
+(defn ->ToolKind
   "Create a `ToolKind` value."
-  (rt/make-value-constructor #'ToolKind "ToolKind"))
+  [value]
+  (validate! #'ToolKind value "ToolKind")
+  value)
 
 ;; -------------------------------------------------------------------------
 ;; ToolCallContent
@@ -3641,16 +3659,15 @@
    [:text :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->TextContent
-  "Create a `TextContent` value."
-  (rt/make-object-constructor
-    #'TextContent
-    "TextContent"
-    [{:key :text, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
+(defn ->TextContent
+  [text]
+  (let [value {
+      :text text
+      :annotations nil
+      :_meta nil
+    }]
+    (validate! #'TextContent value "TextContent")
+    value))
 ;; -------------------------------------------------------------------------
 ;; SessionCapabilities
 ;; -------------------------------------------------------------------------

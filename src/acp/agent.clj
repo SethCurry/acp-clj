@@ -377,7 +377,7 @@
   (send-session-update conn sid
     (schemas/->SessionUpdate
      {:sessionUpdate "agent_message_chunk"
-      :content       (schemas/->ContentBlock {:type "text" :text content})})))
+      :content       (schemas/->TextContent content)})))
 
 (defn- legacy-permission-request?
   "True for the older `session/request_permission` shape, which used a

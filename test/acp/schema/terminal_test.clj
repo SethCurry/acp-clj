@@ -189,3 +189,90 @@
                                    (:value (ex-data e)))))
       (test/is (some? (:errors (ex-data e))))
       (test/is (re-find #"Invalid TerminalOutputResponse" (ex-message e))))))
+
+
+(test/deftest TerminalId-schema
+  (test/testing "accepts strings"
+    (test/is (m/validate terminal/TerminalId "terminal-1"))
+    (test/is (m/validate terminal/TerminalId ""))
+    (test/is (m/validate terminal/TerminalId "terminal/with/slashes")))
+
+  (test/testing "rejects non-string values"
+    (doseq [value [nil 1 1.5 :terminal 'terminal true [:terminal] {:id "terminal"}]]
+      (test/is (not (m/validate terminal/TerminalId value))
+               (str "expected " (pr-str value) " to be rejected")))))
+
+
+(test/deftest ->TerminalId
+  (test/testing "returns the identifier"
+    (test/is (= "terminal-1" (terminal/->TerminalId "terminal-1")))
+    (test/is (= "" (terminal/->TerminalId ""))))
+
+  (test/testing "returns a value that satisfies the schema"
+    (test/is (m/validate terminal/TerminalId
+                        (terminal/->TerminalId "terminal-1"))))
+
+  (test/testing "rejects non-string identifiers"
+    (doseq [id [nil 1 1.5 :terminal 'terminal true [:terminal] {:id "terminal"}]]
+      (test/is (thrown? clojure.lang.ExceptionInfo
+                        (terminal/->TerminalId id))
+               (str "expected id " (pr-str id) " to be rejected"))))
+
+  (test/testing "requires exactly one argument"
+    (test/is (thrown? clojure.lang.ArityException (terminal/->TerminalId)))
+    (test/is (thrown? clojure.lang.ArityException
+                      (terminal/->TerminalId "a" "b"))))
+
+  (test/testing "throws an ex-info with schema, value and errors"
+    (let [e (returned #(terminal/->TerminalId 42))]
+      (test/is (instance? clojure.lang.ExceptionInfo e))
+      (test/is (= 42 (:value (ex-data e))))
+      (test/is (false? (m/validate (:schema (ex-data e))
+                                   (:value (ex-data e)))))
+      (test/is (some? (:errors (ex-data e))))
+      (test/is (re-find #"Invalid TerminalId" (ex-message e))))))
+
+
+(test/deftest Terminal-schema
+  (test/testing "accepts a terminal id"
+    (test/is (m/validate terminal/Terminal {:terminalId "terminal-1"}))
+    (test/is (m/validate terminal/Terminal
+                        {:terminalId "terminal-1" :_meta {:traceId "t-1"}})))
+
+  (test/testing "accepts extra keys (map is open)"
+    (test/is (m/validate terminal/Terminal
+                        {:terminalId "terminal-1" :notInSpec true})))
+
+  (test/testing "requires a valid terminalId"
+    (test/is (not (m/validate terminal/Terminal {})))
+    (test/is (not (m/validate terminal/Terminal {:terminalId nil})))
+    (test/is (not (m/validate terminal/Terminal {:terminalId 1}))))
+
+  (test/testing "rejects non-map values"
+    (doseq [value [nil "terminal-1" [:terminal] true 42]]
+      (test/is (not (m/validate terminal/Terminal value))
+               (str "expected " (pr-str value) " to be rejected")))))
+
+
+(test/deftest ->Terminal
+  (test/testing "builds a terminal reference from an id"
+    (test/is (= {:terminalId "terminal-1" :_meta nil}
+                (terminal/->Terminal "terminal-1"))))
+
+  (test/testing "returns a value that satisfies the schema"
+    (test/is (m/validate terminal/Terminal
+                        (terminal/->Terminal "terminal-1"))))
+
+  (test/testing "rejects invalid terminal ids"
+    (doseq [id [nil 1 :terminal {:id "terminal"}]]
+      (test/is (thrown? clojure.lang.ExceptionInfo
+                        (terminal/->Terminal id))
+               (str "expected id " (pr-str id) " to be rejected"))))
+
+  (test/testing "throws an ex-info with schema, value and errors"
+    (let [e (returned #(terminal/->Terminal 42))]
+      (test/is (instance? clojure.lang.ExceptionInfo e))
+      (test/is (false? (m/validate (:schema (ex-data e))
+                                   (:value (ex-data e)))))
+      (test/is (some? (:errors (ex-data e))))
+      (test/is (re-find #"Invalid Terminal" (ex-message e))))))

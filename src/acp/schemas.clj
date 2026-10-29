@@ -15,6 +15,9 @@
 
   Generated from acp/schema.json by `acp.schema-tools`."
   (:require [acp.schema-runtime :as rt]
+    [acp.schema.content :as content]
+    [acp.schema.terminal :as terminal]
+    [acp.schema.tool :as tool]
           [malli.core :as m]
           [malli.error :as me]))
 
@@ -37,21 +40,73 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (when (class? (get (ns-map *ns*) 'Error))
   (ns-unmap *ns* 'Error))
 
+(def Role content/Role)
+(def ->Role content/->Role)
+
+(def Annotations content/Annotations)
+(def ->Annotations content/->Annotations)
+
+(def TextContent content/TextContent)
+(def ->TextContent content/->TextContent)
+
+(def ImageContent content/ImageContent)
+(def ->ImageContent content/->ImageContent)
+
+(def AudioContent content/AudioContent)
+(def ->AudioContent content/->AudioContent)
+
+(def ResourceLink content/ResourceLink)
+(def ->ResourceLink content/->ResourceLink)
+
+(def TextResourceContents content/TextResourceContents)
+(def ->TextResourceContents content/->TextResourceContents)
+
+(def BlobResourceContents content/BlobResourceContents)
+(def ->BlobResourceContents content/->BlobResourceContents)
+
+(def EmbeddedResourceResource content/EmbeddedResourceResource)
+(def ->EmbeddedResourceResource content/->EmbeddedResourceResource)
+
+(def EmbeddedResource content/EmbeddedResource)
+(def ->EmbeddedResource content/->EmbeddedResource)
+
+(def ContentBlock content/ContentBlock)
+(def ->ContentBlock content/->ContentBlock)
+
+(def Content content/Content)
+(def ->Content content/->Content)
+
+(def Diff content/Diff)
+(def ->Diff content/->Diff)
+
+(def TerminalExitStatus terminal/TerminalExitStatus)
+(def ->TerminalExitStatus terminal/->TerminalExitStatus)
+
+(def TerminalId terminal/TerminalId)
+(def ->TerminalId terminal/->TerminalId)
+
+(def TerminalOutputResponse terminal/TerminalOutputResponse)
+(def ->TerminalOutputResponse terminal/->TerminalOutputResponse)
+
+(def Terminal terminal/Terminal)
+(def ->Terminal terminal/->Terminal)
+
+(def ToolKind tool/ToolKind)
+(def ->ToolKind tool/->ToolKind)
+
+(def ToolCallContent tool/ToolCallContent)
+(def ->ToolCallContent tool/->ToolCallContent)
+
 ;; Schemas refer to one another, so declare every name up front.
 (declare
-         ToolKind
-         ToolCallContent
          AgentResponse
          McpServerHttp
          SessionConfigOptionCategory
-         TerminalOutputResponse
          ElicitationFormCapabilities
          SetSessionConfigOptionRequest
          AuthMethod
-         TextResourceContents
          ListSessionsRequest
          BooleanConfigOptionCapabilities
-         Terminal
          ToolCallUpdate
          InitializeRequest
          RequestId
@@ -61,7 +116,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          PermissionOptionId
          ReadTextFileResponse
          MessageId
-         EmbeddedResource
          ConfigOptionUpdate
          SetSessionModeRequest
          SessionId
@@ -83,16 +137,13 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          AuthenticateRequest
          LogoutRequest
          LoadSessionResponse
-         Annotations
          IntegerPropertySchema
-         TerminalExitStatus
          LogoutResponse
          SessionAdditionalDirectoriesCapabilities
          ReleaseTerminalRequest
          SessionModeState
          KillTerminalResponse
          FileSystemCapabilities
-         ContentBlock
          StopReason
          ElicitationAcceptAction
          SessionResumeCapabilities
@@ -114,8 +165,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          SessionConfigValueId
          SessionConfigSelectOption
          ContentChunk
-         Role
-         Diff
          AuthenticateResponse
          ErrorCode
          MultiSelectPropertySchema
@@ -124,7 +173,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          AgentRequest
          StringPropertySchema
          ToolCallStatus
-         ResourceLink
          StringMultiSelectItems
          ElicitationSchema
          AvailableCommandInput
@@ -138,7 +186,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          ToolCall
          Plan
          ProtocolVersion
-         AudioContent
          SessionMode
          AvailableCommandsUpdate
          ElicitationUrlCapabilities
@@ -148,7 +195,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          BooleanPropertySchema
          AuthMethodAgent
          AgentCapabilities
-         Content
          CompactionCapabilities
          ElicitationRequestScope
          SessionConfigSelect
@@ -172,13 +218,10 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          RequestPermissionRequest
          SessionUpdate
          TitledMultiSelectItems
-         BlobResourceContents
          ResumeSessionResponse
          Cost
          SessionConfigSelectOptions
-         EmbeddedResourceResource
          SessionDeleteCapabilities
-         ImageContent
          ElicitationCapabilities
          TerminalOutputRequest
          SessionListCapabilities
@@ -202,7 +245,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          SessionInfo
          ResumeSessionRequest
          PlanEntry
-         TextContent
          SessionCapabilities
          PromptRequest
          AgentAuthCapabilities
@@ -211,51 +253,11 @@ an `ex-info` with a human-readable malli error explanation otherwise."
          AvailableCommand
          ElicitationContentValue
          LogoutCapabilities
-         TerminalId
          SessionInfoUpdate
          ExtNotification
          ClientCapabilities
          RequestPermissionOutcome
          ClientRequest)
-
-;; -------------------------------------------------------------------------
-;; ToolKind
-;; -------------------------------------------------------------------------
-
-(def ToolKind
-  "Categories of tools that can be invoked. Tool kinds help clients choose appropriate icons and optimize how they display tool execution progress. See protocol docs: [Creating](https://agentclientprotocol.com/protocol/v1/tool-calls#creating)"
-  [:enum
-   "read"
-   "edit"
-   "delete"
-   "move"
-   "search"
-   "execute"
-   "think"
-   "fetch"
-   "switch_mode"
-   "other"])
-
-(defn ->ToolKind
-  "Create a `ToolKind` value."
-  [value]
-  (validate! #'ToolKind value "ToolKind")
-  value)
-
-;; -------------------------------------------------------------------------
-;; ToolCallContent
-;; -------------------------------------------------------------------------
-
-(def ToolCallContent
-  "Content produced by a tool call. Tool calls can produce different types of content including standard content blocks (text, images) or file diffs. See protocol docs: [Content](https://agentclientprotocol.com/protocol/v1/tool-calls#content)"
-  [:or
-   [:and [:map {:closed false} [:type [:= "content"]]] #'Content]
-   [:and [:map {:closed false} [:type [:= "diff"]]] #'Diff]
-   [:and [:map {:closed false} [:type [:= "terminal"]]] #'Terminal]])
-
-(def ->ToolCallContent
-  "Create a `ToolCallContent` value."
-  (rt/make-value-constructor #'ToolCallContent "ToolCallContent"))
 
 ;; -------------------------------------------------------------------------
 ;; AgentResponse
@@ -332,30 +334,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     "SessionConfigOptionCategory"))
 
 ;; -------------------------------------------------------------------------
-;; TerminalOutputResponse
-;; -------------------------------------------------------------------------
-
-(def TerminalOutputResponse
-  "Response containing the terminal output and exit status."
-  [:map
-   {:closed false}
-   [:output :string]
-   [:truncated :boolean]
-   [:exitStatus {:optional true} [:maybe #'TerminalExitStatus]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->TerminalOutputResponse
-  "Create a `TerminalOutputResponse` value."
-  (rt/make-object-constructor
-    #'TerminalOutputResponse
-    "TerminalOutputResponse"
-    [{:key :output, :required? true, :nullable? false}
-     {:key :truncated, :required? true, :nullable? false}
-     {:key :exitStatus, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ElicitationFormCapabilities
 ;; -------------------------------------------------------------------------
 
@@ -416,30 +394,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-value-constructor #'AuthMethod "AuthMethod"))
 
 ;; -------------------------------------------------------------------------
-;; TextResourceContents
-;; -------------------------------------------------------------------------
-
-(def TextResourceContents
-  "Text-based resource contents."
-  [:map
-   {:closed false}
-   [:mimeType {:optional true} [:maybe :string]]
-   [:text :string]
-   [:uri :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->TextResourceContents
-  "Create a `TextResourceContents` value."
-  (rt/make-object-constructor
-    #'TextResourceContents
-    "TextResourceContents"
-    [{:key :text, :required? true, :nullable? false}
-     {:key :uri, :required? true, :nullable? false}
-     {:key :mimeType, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ListSessionsRequest
 ;; -------------------------------------------------------------------------
 
@@ -477,26 +431,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     #'BooleanConfigOptionCapabilities
     "BooleanConfigOptionCapabilities"
     [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; Terminal
-;; -------------------------------------------------------------------------
-
-(def Terminal
-  "Embed a terminal created with `terminal/create` by its id. The terminal must be added before calling `terminal/release`. See protocol docs: [Terminal](https://agentclientprotocol.com/protocol/v1/terminals)"
-  [:map
-   {:closed false}
-   [:terminalId #'TerminalId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->Terminal
-  "Create a `Terminal` value."
-  (rt/make-object-constructor
-    #'Terminal
-    "Terminal"
-    [{:key :terminalId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -690,28 +624,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def ->MessageId
   "Create a `MessageId` value."
   (rt/make-value-constructor #'MessageId "MessageId"))
-
-;; -------------------------------------------------------------------------
-;; EmbeddedResource
-;; -------------------------------------------------------------------------
-
-(def EmbeddedResource
-  "The contents of a resource, embedded into a prompt or tool call result."
-  [:map
-   {:closed false}
-   [:annotations {:optional true} [:maybe #'Annotations]]
-   [:resource #'EmbeddedResourceResource]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->EmbeddedResource
-  "Create a `EmbeddedResource` value."
-  (rt/make-object-constructor
-    #'EmbeddedResource
-    "EmbeddedResource"
-    [{:key :resource, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; ConfigOptionUpdate
@@ -1155,30 +1067,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; Annotations
-;; -------------------------------------------------------------------------
-
-(def Annotations
-  "Optional annotations for the client. The client can use annotations to inform how objects are used or displayed"
-  [:map
-   {:closed false}
-   [:audience {:optional true} [:maybe [:vector #'Role]]]
-   [:lastModified {:optional true} [:maybe :string]]
-   [:priority {:optional true} [:maybe number?]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->Annotations
-  "Create a `Annotations` value."
-  (rt/make-object-constructor
-    #'Annotations
-    "Annotations"
-    [{:key :audience, :required? false, :nullable? true}
-     {:key :lastModified, :required? false, :nullable? true}
-     {:key :priority, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; IntegerPropertySchema
 ;; -------------------------------------------------------------------------
 
@@ -1206,27 +1094,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
      {:key :_meta, :required? false, :nullable? true}]
     false))
 
-;; -------------------------------------------------------------------------
-;; TerminalExitStatus
-;; -------------------------------------------------------------------------
-
-(def TerminalExitStatus
-  "Exit status of a terminal command."
-  [:map
-   {:closed false}
-   [:exitCode {:optional true} [:maybe [:int {:min 0}]]]
-   [:signal {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->TerminalExitStatus
-  "Create a `TerminalExitStatus` value."
-  (rt/make-object-constructor
-    #'TerminalExitStatus
-    "TerminalExitStatus"
-    [{:key :exitCode, :required? false, :nullable? true}
-     {:key :signal, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; LogoutResponse
@@ -1347,23 +1214,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
      {:key :writeTextFile, :required? false, :nullable? false}
      {:key :_meta, :required? false, :nullable? true}]
     false))
-
-;; -------------------------------------------------------------------------
-;; ContentBlock
-;; -------------------------------------------------------------------------
-
-(def ContentBlock
-  "Content blocks represent displayable information in the Agent Client Protocol. They provide a structured way to handle various types of user-facing content—whether it's text from language models, images for analysis, or embedded resources for context. Content blocks appear in: - User prompts sent via `session/prompt` - Language model output streamed through `session/update` notifications - Progress updates and results from tool calls This structure is compatible with the Model Context Protocol (MCP), enabling agents to seamlessly forward content from MCP tool outputs without transformation. See protocol docs: [Content](https://agentclientprotocol.com/protocol/v1/content)"
-  [:or
-   [:and [:map {:closed false} [:type [:= "text"]]] #'TextContent]
-   [:and [:map {:closed false} [:type [:= "image"]]] #'ImageContent]
-   [:and [:map {:closed false} [:type [:= "audio"]]] #'AudioContent]
-   [:and [:map {:closed false} [:type [:= "resource_link"]]] #'ResourceLink]
-   [:and [:map {:closed false} [:type [:= "resource"]]] #'EmbeddedResource]])
-
-(def ->ContentBlock
-  "Create a `ContentBlock` value."
-  (rt/make-value-constructor #'ContentBlock "ContentBlock"))
 
 ;; -------------------------------------------------------------------------
 ;; StopReason
@@ -1775,42 +1625,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; Role
-;; -------------------------------------------------------------------------
-
-(def Role
-  "The sender or recipient of messages and data in a conversation."
-  [:enum "assistant" "user"])
-
-(def ->Role
-  "Create a `Role` value."
-  (rt/make-value-constructor #'Role "Role"))
-
-;; -------------------------------------------------------------------------
-;; Diff
-;; -------------------------------------------------------------------------
-
-(def Diff
-  "A diff representing file modifications. Shows changes to files in a format suitable for display in the client UI. See protocol docs: [Content](https://agentclientprotocol.com/protocol/v1/tool-calls#content)"
-  [:map
-   {:closed false}
-   [:path :string]
-   [:oldText {:optional true} [:maybe :string]]
-   [:newText :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->Diff
-  "Create a `Diff` value."
-  (rt/make-object-constructor
-    #'Diff
-    "Diff"
-    [{:key :path, :required? true, :nullable? false}
-     {:key :newText, :required? true, :nullable? false}
-     {:key :oldText, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; AuthenticateResponse
 ;; -------------------------------------------------------------------------
 
@@ -2001,38 +1815,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def ->ToolCallStatus
   "Create a `ToolCallStatus` value."
   (rt/make-value-constructor #'ToolCallStatus "ToolCallStatus"))
-
-;; -------------------------------------------------------------------------
-;; ResourceLink
-;; -------------------------------------------------------------------------
-
-(def ResourceLink
-  "A resource that the server is capable of reading, included in a prompt or tool call result."
-  [:map
-   {:closed false}
-   [:annotations {:optional true} [:maybe #'Annotations]]
-   [:description {:optional true} [:maybe :string]]
-   [:mimeType {:optional true} [:maybe :string]]
-   [:name :string]
-   [:size {:optional true} [:maybe :int]]
-   [:title {:optional true} [:maybe :string]]
-   [:uri :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ResourceLink
-  "Create a `ResourceLink` value."
-  (rt/make-object-constructor
-    #'ResourceLink
-    "ResourceLink"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :uri, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :description, :required? false, :nullable? true}
-     {:key :mimeType, :required? false, :nullable? true}
-     {:key :size, :required? false, :nullable? true}
-     {:key :title, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; StringMultiSelectItems
@@ -2316,30 +2098,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-value-constructor #'ProtocolVersion "ProtocolVersion"))
 
 ;; -------------------------------------------------------------------------
-;; AudioContent
-;; -------------------------------------------------------------------------
-
-(def AudioContent
-  "Audio provided to or from an LLM."
-  [:map
-   {:closed false}
-   [:annotations {:optional true} [:maybe #'Annotations]]
-   [:data :string]
-   [:mimeType :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->AudioContent
-  "Create a `AudioContent` value."
-  (rt/make-object-constructor
-    #'AudioContent
-    "AudioContent"
-    [{:key :data, :required? true, :nullable? false}
-     {:key :mimeType, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; SessionMode
 ;; -------------------------------------------------------------------------
 
@@ -2534,26 +2292,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
      {:key :mcpCapabilities, :required? false, :nullable? false}
      {:key :sessionCapabilities, :required? false, :nullable? false}
      {:key :auth, :required? false, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; Content
-;; -------------------------------------------------------------------------
-
-(def Content
-  "Standard content block (text, images, resources)."
-  [:map
-   {:closed false}
-   [:content #'ContentBlock]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->Content
-  "Create a `Content` value."
-  (rt/make-object-constructor
-    #'Content
-    "Content"
-    [{:key :content, :required? true, :nullable? false}
      {:key :_meta, :required? false, :nullable? true}]
     false))
 
@@ -3037,30 +2775,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; BlobResourceContents
-;; -------------------------------------------------------------------------
-
-(def BlobResourceContents
-  "Binary resource contents."
-  [:map
-   {:closed false}
-   [:blob :string]
-   [:mimeType {:optional true} [:maybe :string]]
-   [:uri :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->BlobResourceContents
-  "Create a `BlobResourceContents` value."
-  (rt/make-object-constructor
-    #'BlobResourceContents
-    "BlobResourceContents"
-    [{:key :blob, :required? true, :nullable? false}
-     {:key :uri, :required? true, :nullable? false}
-     {:key :mimeType, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ResumeSessionResponse
 ;; -------------------------------------------------------------------------
 
@@ -3123,20 +2837,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     "SessionConfigSelectOptions"))
 
 ;; -------------------------------------------------------------------------
-;; EmbeddedResourceResource
-;; -------------------------------------------------------------------------
-
-(def EmbeddedResourceResource
-  "Resource content that can be embedded in a message."
-  [:or #'TextResourceContents #'BlobResourceContents])
-
-(def ->EmbeddedResourceResource
-  "Create a `EmbeddedResourceResource` value."
-  (rt/make-value-constructor
-    #'EmbeddedResourceResource
-    "EmbeddedResourceResource"))
-
-;; -------------------------------------------------------------------------
 ;; SessionDeleteCapabilities
 ;; -------------------------------------------------------------------------
 
@@ -3152,32 +2852,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     #'SessionDeleteCapabilities
     "SessionDeleteCapabilities"
     [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ImageContent
-;; -------------------------------------------------------------------------
-
-(def ImageContent
-  "An image provided to or from an LLM."
-  [:map
-   {:closed false}
-   [:annotations {:optional true} [:maybe #'Annotations]]
-   [:data :string]
-   [:mimeType :string]
-   [:uri {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ImageContent
-  "Create a `ImageContent` value."
-  (rt/make-object-constructor
-    #'ImageContent
-    "ImageContent"
-    [{:key :data, :required? true, :nullable? false}
-     {:key :mimeType, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :uri, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -3648,27 +3322,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; TextContent
-;; -------------------------------------------------------------------------
-
-(def TextContent
-  "Text provided to or from an LLM."
-  [:map
-   {:closed false}
-   [:annotations {:optional true} [:maybe #'Annotations]]
-   [:text :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(defn ->TextContent
-  [text]
-  (let [value {
-      :text text
-      :annotations nil
-      :_meta nil
-    }]
-    (validate! #'TextContent value "TextContent")
-    value))
-;; -------------------------------------------------------------------------
 ;; SessionCapabilities
 ;; -------------------------------------------------------------------------
 
@@ -3855,18 +3508,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     "LogoutCapabilities"
     [{:key :_meta, :required? false, :nullable? true}]
     false))
-
-;; -------------------------------------------------------------------------
-;; TerminalId
-;; -------------------------------------------------------------------------
-
-(def TerminalId
-  "Typed identifier used for terminal values on the wire."
-  :string)
-
-(def ->TerminalId
-  "Create a `TerminalId` value."
-  (rt/make-value-constructor #'TerminalId "TerminalId"))
 
 ;; -------------------------------------------------------------------------
 ;; SessionInfoUpdate

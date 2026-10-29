@@ -47,3 +47,38 @@
     :_meta meta
     }]
   (rt/validate! #'TerminalOutputResponse value "TerminalOutputResponse")))
+
+
+;; -------------------------------------------------------------------------
+;; TerminalId
+;; -------------------------------------------------------------------------
+
+(def TerminalId
+  "Typed identifier used for terminal values on the wire."
+  :string)
+
+(defn ->TerminalId
+  "Create a `TerminalId` value."
+  [id]
+  (rt/validate! #'TerminalId id "TerminalId"))
+
+
+;; -------------------------------------------------------------------------
+;; Terminal
+;; -------------------------------------------------------------------------
+
+(def Terminal
+  "Embed a terminal created with `terminal/create` by its id. The terminal must be added before calling `terminal/release`. See protocol docs: [Terminal](https://agentclientprotocol.com/protocol/v1/terminals)"
+  [:map
+   {:closed false}
+   [:terminalId #'TerminalId]
+   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
+
+(def ->Terminal
+  "Create a `Terminal` value."
+  (rt/make-object-constructor
+    #'Terminal
+    "Terminal"
+    [{:key :terminalId, :required? true, :nullable? false}
+     {:key :_meta, :required? false, :nullable? true}]
+    false))

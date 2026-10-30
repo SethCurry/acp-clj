@@ -131,3 +131,26 @@
   "Create a `McpServer` value."
   [server]
   (rt/validate! #'McpServer server "McpServer"))
+
+
+;; -------------------------------------------------------------------------
+;; McpCapabilities
+;; -------------------------------------------------------------------------
+
+(def McpCapabilities
+  "MCP capabilities supported by the agent"
+  [:map
+   {:closed false}
+   [:http {:optional true} :boolean]
+   [:sse {:optional true} :boolean]
+   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
+
+(def ->McpCapabilities
+  "Create a `McpCapabilities` value."
+  (rt/make-object-constructor
+    #'McpCapabilities
+    "McpCapabilities"
+    [{:key :http, :required? false, :nullable? false}
+     {:key :sse, :required? false, :nullable? false}
+     {:key :_meta, :required? false, :nullable? true}]
+    false))

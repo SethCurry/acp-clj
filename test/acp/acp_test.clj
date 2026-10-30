@@ -10,7 +10,7 @@
             [cheshire.core :as json]
             [acp.agent :as acp]
             [acp.jsonrpc :as jsonrpc]
-            [acp.schemas :as schemas]
+            [acp.schema.core :as schemas]
             [acp.test-support :as test-support]
             [clojure.string]
             [malli.core :as m])

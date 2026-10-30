@@ -298,3 +298,60 @@
                                    (:value (ex-data e)))))
       (test/is (some? (:errors (ex-data e))))
       (test/is (re-find #"Invalid McpServer" (ex-message e))))))
+
+
+;; -------------------------------------------------------------------------
+;; McpCapabilities
+;; -------------------------------------------------------------------------
+
+(test/deftest McpCapabilities-schema
+  (test/testing "accepts an empty map and transport flags"
+    (test/is (m/validate mcp/McpCapabilities {}))
+    (test/is (m/validate mcp/McpCapabilities {:http true}))
+    (test/is (m/validate mcp/McpCapabilities {:sse false}))
+    (test/is (m/validate mcp/McpCapabilities {:http true :sse true}))
+    (test/is (m/validate mcp/McpCapabilities {:_meta {:traceId "t-1"}}))
+    (test/is (m/validate mcp/McpCapabilities {:http true :notInSpec true})))
+
+  (test/testing "rejects malformed capability values"
+    (test/is (not (m/validate mcp/McpCapabilities {:http nil})))
+    (test/is (not (m/validate mcp/McpCapabilities {:http "true"})))
+    (test/is (not (m/validate mcp/McpCapabilities {:sse 1})))
+    (test/is (not (m/validate mcp/McpCapabilities {:_meta "meta"})))
+    (doseq [value [nil "capabilities" [:http] true 42]]
+      (test/is (not (m/validate mcp/McpCapabilities value))
+               (str "expected " (pr-str value) " to be rejected")))))
+
+
+(test/deftest ->McpCapabilities
+  (test/testing "fills the metadata slot with nil"
+    (test/is (= {:_meta nil} (mcp/->McpCapabilities))))
+
+  (test/testing "accepts transport flags and metadata"
+    (test/is (= {:http true :_meta nil}
+                (mcp/->McpCapabilities {:http true})))
+    (test/is (= {:http true :sse true :_meta {:traceId "t-1"}}
+                (mcp/->McpCapabilities {:http true
+                                        :sse true
+                                        :_meta {:traceId "t-1"}}))))
+
+  (test/testing "returns a value that satisfies the schema"
+    (test/is (m/validate mcp/McpCapabilities (mcp/->McpCapabilities)))
+    (test/is (m/validate mcp/McpCapabilities
+                        (mcp/->McpCapabilities {:sse true}))))
+
+  (test/testing "rejects invalid arguments"
+    (doseq [args [[{:http "yes"}]
+                  [{:sse nil}]
+                  [{:_meta "meta"}]]]
+      (test/is (thrown? clojure.lang.ExceptionInfo
+                        (apply mcp/->McpCapabilities args))
+               (str "expected " (pr-str args) " to be rejected"))))
+
+  (test/testing "throws an ex-info with schema, value and errors"
+    (let [e (returned #(mcp/->McpCapabilities {:http "yes"}))]
+      (test/is (instance? clojure.lang.ExceptionInfo e))
+      (test/is (false? (m/validate (:schema (ex-data e))
+                                   (:value (ex-data e)))))
+      (test/is (some? (:errors (ex-data e))))
+      (test/is (re-find #"Invalid McpCapabilities" (ex-message e))))))

@@ -3,7 +3,7 @@
             [cheshire.core :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [acp.schemas :as schemas]
+            [acp.schema.core :as schemas]
             [acp.schema-runtime :as rt]
             [acp.jsonrpc :as jsonrpc]
             [acp.errors :as errors])

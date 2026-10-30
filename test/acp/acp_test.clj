@@ -10,6 +10,7 @@
             [cheshire.core :as json]
             [acp.agent :as acp]
             [acp.jsonrpc :as jsonrpc]
+            [acp.errors :as errors]
             [acp.schema.core :as schemas]
             [acp.test-support :as test-support]
             [clojure.string]
@@ -61,6 +62,7 @@
           (> (System/currentTimeMillis) deadline) msgs
           :else (do (Thread/sleep 5) (recur)))))))
 
+
 (defn- run-agent
   "Start an agent with `handler` reading from `in` and writing to `out`.
   Returns the running Thread."
@@ -76,7 +78,7 @@
 
 (defn- echo-agent
   "An agent that initializes at protocol version 2, creates UUID sessions,
-  and echoes prompt text back as an agent message before going idle."
+  and echoes prompt text back as an agent message before finishing the turn."
   []
   (reify acp/AgentHandler
     (handle-initialize [_ _conn {:keys [protocolVersion]}]
@@ -86,33 +88,22 @@
     (handle-session-new [_ _conn _params]
       {:sessionId (str (UUID/randomUUID))})
     (handle-session-prompt [_ conn {:keys [sessionId prompt]}]
-      (let [user-id   (str (UUID/randomUUID))
-            agent-id  (str (UUID/randomUUID))
-            text      (->> prompt
-                           (filter #(= "text" (:type %)))
-                           (mapcat :content)
-                           (apply str))
-            ;; `MessageTextContent` requires a `_meta` key, so normalize the
-            ;; client prompt parts before echoing them back as a message.
-            content   (mapv #(assoc % :_meta (:_meta %)) prompt)]
+      (let [text (->> prompt
+                      (filter #(= "text" (:type %)))
+                      (map :text)
+                      (apply str))]
         (acp/send-session-update conn sessionId
-          {:sessionUpdate "user_message"
-           :messageId user-id
-           :role "user"
-           :content content})
+          {:sessionUpdate "user_message_chunk"
+           :content {:type "text" :text text}})
         (acp/send-session-update conn sessionId
-          {:sessionUpdate "agent_message"
-           :messageId agent-id
-           :role "agent"
-           :content [{:_meta nil :type "text" :content text}]})
-        (acp/send-session-update conn sessionId
-          {:sessionUpdate "state_update" :state "idle"})
-        {:messageId user-id}))
+          {:sessionUpdate "agent_message_chunk"
+           :content {:type "text" :text text}})
+        {:stopReason "end_turn"}))
     (on-session-cancel [_ _conn _params] nil)
     (on-cancel-request [_ _conn _params] nil)
     (on-notification [_ _conn _method _params] nil)
     (on-ext-request [_ _conn _method _params]
-      (acp/acp-error acp/err-method))))
+      (errors/acp-error errors/err-method))))
 
 (defn- init-request
   ([] (init-request 2))
@@ -148,7 +139,7 @@
     (let [msgs (drain-until baos #(some :error %) 2000)
           err  (some :error msgs)]
       (is (some? err))
-      (is (= acp/err-protocol-ver (:code err)))
+      (is (= errors/err-protocol-ver (:code err)))
       (is (= {:requested 1 :supported [2]} (:data err))))
     (.close pout)))
 
@@ -158,13 +149,60 @@
         _          (run-agent (acp/default-handler) pin baos)]
     (write-line pout (init-request 2))
     (write-line pout {:jsonrpc "2.0" :id 2 :method "session/new"
-                      :params {:cwd "/tmp"}})
+                      :params {:cwd "/tmp" :mcpServers []}})
     (let [msgs (drain-until baos
                             #(and (some :result %) (some :error %))
                             2000)
           by-id (into {} (map (juxt :id identity)) msgs)]
       (is (= 2 (-> (by-id 1) :result :protocolVersion)))
-      (is (= acp/err-method (-> (by-id 2) :error :code))))
+      (is (= errors/err-method (-> (by-id 2) :error :code))))
+    (.close pout)))
+
+;; ---------------------------------------------------------------------------
+;; Authentication
+;; ---------------------------------------------------------------------------
+
+(deftest authenticate-and-logout-use-current-method-names
+  (let [[pin pout] (pipe-input)
+        baos       (ByteArrayOutputStream.)
+        seen       (atom [])
+        handler    (reify acp/AgentHandler
+                     (handle-initialize [_ _conn _params]
+                       {:protocolVersion 2
+                        :info {:name "auth" :version "0.1.0"}
+                        :capabilities {}})
+                     (handle-authenticate [_ _conn params]
+                       (swap! seen conj [:authenticate params])
+                       {})
+                     (handle-logout [_ _conn params]
+                       (swap! seen conj [:logout params])
+                       {})
+                     (on-session-cancel [_ _conn _params] nil)
+                     (on-cancel-request [_ _conn _params] nil)
+                     (on-notification [_ _conn _method _params] nil)
+                     (on-ext-request [_ _conn _method _params]
+                       (errors/acp-error errors/err-method)))
+        _          (run-agent handler pin baos)]
+    (write-line pout (init-request 2))
+    (write-line pout {:jsonrpc "2.0" :id 2 :method "authenticate"
+                      :params {:methodId "method-1"}})
+    (write-line pout {:jsonrpc "2.0" :id 3 :method "logout"
+                      :params {}})
+    ;; `authenticate` requires a methodId, so this must fail param validation
+    ;; before reaching the handler.
+    (write-line pout {:jsonrpc "2.0" :id 4 :method "authenticate"
+                      :params {}})
+    (let [msgs (drain-until baos
+                            #(every? (fn [id]
+                                       (some (fn [m] (= id (:id m))) %))
+                                     [2 3 4])
+                            2000)
+          by-id (into {} (map (juxt :id identity)) msgs)]
+      (is (= {} (-> (get by-id 2) :result)))
+      (is (= {} (-> (get by-id 3) :result)))
+      (is (= errors/err-params (-> (get by-id 4) :error :code)))
+      (is (= #{[:authenticate {:methodId "method-1"}] [:logout {}]}
+             (set @seen))))
     (.close pout)))
 
 ;; ---------------------------------------------------------------------------
@@ -177,7 +215,7 @@
         _          (run-agent (echo-agent) pin baos)]
     (write-line pout (init-request 2))
     (write-line pout {:jsonrpc "2.0" :id 2 :method "session/new"
-                      :params {:cwd "/tmp"}})
+                      :params {:cwd "/tmp" :mcpServers []}})
     ;; Wait for the session id.
     (let [init-msgs (drain-until baos
                                   #(some (fn [x] (-> x :result :sessionId)) %)
@@ -187,18 +225,11 @@
       (write-line pout
                   {:jsonrpc "2.0" :id 3 :method "session/prompt"
                    :params {:sessionId session-id
-                            :prompt [{:type "text" :content "hello"}]}})
+                            :prompt [{:type "text" :text "hello"}]}})
       (let [msgs (drain-until
                   baos
-                  ;; The agent emits the idle `state_update` *before* its
-                  ;; `handle-session-prompt` return value is written back as
-                  ;; the id-3 response, so wait for both before reading.
                   (fn [ms]
-                    (and (some (fn [m]
-                                 (and (= "session/update" (:method m))
-                                      (= "idle" (-> m :params :update :state))))
-                               ms)
-                         (some #(and (= 3 (:id %)) (:result %)) ms)))
+                    (some #(and (= 3 (:id %)) (:result %)) ms))
                   2000)
             prompt-resp (some #(and (= 3 (:id %)) (:result %)) msgs)
             updates     (eduction
@@ -206,15 +237,14 @@
                          (map :params) msgs)
             kinds       (set (map #(-> % :update :sessionUpdate) updates))
             agent-text  (->> updates
-                             (filter #(= "agent_message"
+                             (filter #(= "agent_message_chunk"
                                          (-> % :update :sessionUpdate)))
                              first
-                             :update :content first :content)]
+                             :update :content :text)]
         (is (= "hello" agent-text))
-        (is (contains? kinds "user_message"))
-        (is (contains? kinds "agent_message"))
-        (is (contains? kinds "state_update"))
-        (is (some? (:messageId prompt-resp)))))
+        (is (contains? kinds "user_message_chunk"))
+        (is (contains? kinds "agent_message_chunk"))
+        (is (= "end_turn" (:stopReason prompt-resp)))))
     (.close pout)))
 
 ;; ---------------------------------------------------------------------------
@@ -256,29 +286,37 @@
                        (let [p (acp/request-permission
                                 conn
                                 {:sessionId "s1"
-                                 :title "Run rm -rf?"
-                                 :options [{:optionId "yes" :kind "allow"}
-                                           {:optionId "no" :kind "deny"}]})]
+                                 :toolCall {:toolCallId "tc1"
+                                            :title "Run rm -rf?"}
+                                 :options [{:optionId "yes"
+                                            :name "Allow"
+                                            :kind "allow_once"}
+                                           {:optionId "no"
+                                            :name "Deny"
+                                            :kind "reject_once"}]})]
                          (future
                            (try
-                             (let [outcome (acp/await-request p 2000)]
-                               (acp/send-notification
+                             (let [outcome (jsonrpc/await-request p 2000)]
+                               (jsonrpc/send-notification
                                 conn "session/update"
                                 {:sessionId "s1"
                                  :update {:sessionUpdate "notice"
-                                          :message (str "got: " (:outcome outcome))}}))
+                                          :severity "info"
+                                          :title (str "got: "
+                                                      (-> outcome :outcome :optionId))}}))
                              (catch Throwable _
-                               (acp/send-notification
+                               (jsonrpc/send-notification
                                 conn "session/update"
                                 {:sessionId "s1"
                                  :update {:sessionUpdate "notice"
-                                          :message "permission failed"}})))))
-                       {:messageId "m1"})
+                                          :severity "error"
+                                          :title "permission failed"}})))))
+                       {:stopReason "end_turn"})
                      (on-session-cancel [_ _conn _params] nil)
                      (on-cancel-request [_ _conn _params] nil)
                      (on-notification [_ _conn _m _p] nil)
                      (on-ext-request [_ _conn _m _p]
-                       (acp/acp-error acp/err-method)))
+                       (errors/acp-error errors/err-method)))
         _ (run-agent handler pin baos)]
     (write-line pout (init-request 2))
     (write-line pout {:jsonrpc "2.0" :id 2 :method "session/prompt"
@@ -294,7 +332,7 @@
       ;; Answer it.
       (write-line pout
                   {:jsonrpc "2.0" :id req-id
-                   :result {:outcome {:optionId "yes" :kind "allow"}}})
+                   :result {:outcome {:outcome "selected" :optionId "yes"}}})
       (let [msgs (drain-until
                   baos
                   #(some (fn [m]
@@ -302,8 +340,7 @@
                                 (= "notice" (-> m :params :update :sessionUpdate))))
                          %)
                   2000)]
-        (is (some #(= "got: {:optionId \"yes\", :kind \"allow\"}"
-                      (-> % :params :update :message))
+        (is (some #(= "got: yes" (-> % :params :update :title))
                   msgs))))
     (.close pout)))
 
@@ -322,7 +359,7 @@
                      (on-notification [_ _conn method params]
                        (reset! seen [method params]))
                      (on-ext-request [_ _conn _m _p]
-                       (acp/acp-error acp/err-method)))
+                       (errors/acp-error errors/err-method)))
         _ (run-agent handler pin baos)]
     (write-line pout (init-request 2))
     (write-line pout {:jsonrpc "2.0" :method "session/cancel"
@@ -350,14 +387,14 @@
                            :info {:name "c" :version "0"}
                            :capabilities {}}}
                  {:jsonrpc "2.0" :id 2 :method "session/new"
-                  :params {:cwd "/tmp"}}])
+                  :params {:cwd "/tmp" :mcpServers []}}])
     (let [msgs (drain-until baos #(some vector? %) 2000)
           batch (some #(when (vector? %) %) msgs)]
       (is (some? batch))
       (is (= 2 (count batch)))
       (is (= #{1 2} (set (map :id batch))))
       (is (= 2 (-> (batch 0) :result :protocolVersion)))
-      (is (= acp/err-method (-> (batch 1) :error :code))))
+      (is (= errors/err-method (-> (batch 1) :error :code))))
     (.close pout)))
 
 (deftest all-notification-batch-produces-no-output
@@ -379,7 +416,7 @@
     (let [msgs (drain-until baos #(seq %) 1000)]
       (is (= 1 (count msgs)))
       (is (nil? (:id (first msgs))))
-      (is (= acp/err-invalid (-> (first msgs) :error :code))))
+      (is (= errors/err-invalid (-> (first msgs) :error :code))))
     (.close pout)))
 
 (deftest malformed-line-returns-parse-error
@@ -393,7 +430,7 @@
     (let [msgs (drain-until baos #(seq %) 1000)]
       (is (= 1 (count msgs)))
       (is (nil? (:id (first msgs))))
-      (is (= acp/err-parse (-> (first msgs) :error :code))))
+      (is (= errors/err-parse (-> (first msgs) :error :code))))
     (.close pout)))
 
 (deftest blank-lines-are-ignored
@@ -414,8 +451,8 @@
 ;; ---------------------------------------------------------------------------
 
 (deftest acp-error-defaults-message-from-code
-  (let [e (acp/acp-error acp/err-method)]
-    (is (= acp/err-method (:code e)))
+  (let [e (errors/acp-error errors/err-method)]
+    (is (= errors/err-method (:code e)))
     (is (= "Method not found" (:message e)))))
 
 (deftest clean-strips-nil-top-level-keys

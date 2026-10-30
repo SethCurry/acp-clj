@@ -20,43 +20,9 @@
 ;; ACP v2 is protocol version 2.
 (def ^:const protocol-version-2 2)
 
-(def ^:const current-protocol-version
-  "The newest ACP protocol version this implementation speaks."
-  protocol-version-2)
-
 (def ^:const ^:private default-supported-versions
   "Protocol versions the default handler advertises, highest last."
   [protocol-version-2])
-
-;; ---------------------------------------------------------------------------
-;; Re-exported helpers
-;; ---------------------------------------------------------------------------
-
-;; These names used to live in this namespace before `errors` and `jsonrpc`
-;; were split out. Keep them available here so handlers only need one require.
-(def err-parse        errors/err-parse)
-(def err-invalid      errors/err-invalid)
-(def err-method       errors/err-method)
-(def err-params       errors/err-params)
-(def err-internal     errors/err-internal)
-(def err-cancelled    errors/err-cancelled)
-(def err-auth         errors/err-auth)
-(def err-not-found    errors/err-not-found)
-(def err-protocol-ver errors/err-protocol-ver)
-
-(def acp-error    errors/acp-error)
-(def acp-error?   errors/acp-error?)
-(def throw-acp    errors/throw-acp)
-(def ex->acp-error errors/ex->acp-error)
-
-(def write-message     jsonrpc/write-message)
-(def response-envelope jsonrpc/response-envelope)
-(def error-envelope    jsonrpc/error-envelope)
-(def send-response     jsonrpc/send-response)
-(def send-error        jsonrpc/send-error)
-(def send-notification jsonrpc/send-notification)
-(def send-request      jsonrpc/send-request)
-(def await-request     jsonrpc/await-request)
 
 ;; ---------------------------------------------------------------------------
 ;; Agent handler protocol
@@ -77,13 +43,13 @@
     "Respond to `initialize`. Returns an `InitializeResponse` map
     (`:protocolVersion`, `:info`, optionally `:capabilities`/`:authMethods`).")
 
-  (handle-auth-login [h conn params]
-    "Respond to `auth/login`. Only called when the agent advertised
-    `authMethods`. `params` has `:methodId`.")
+  (handle-authenticate [h conn params]
+    "Respond to `authenticate`. Only called when the agent advertised
+    authentication methods. `params` has `:methodId`.")
 
-  (handle-auth-logout [h conn params]
-    "Respond to `auth/logout`. Only called when the agent advertised
-    `authMethods`.")
+  (handle-logout [h conn params]
+    "Respond to `logout`. Only called when the agent advertised `logout` in
+    its `auth` capabilities.")
 
   (handle-session-new [h conn params]
     "Create a session. `params` has `:cwd` and optionally
@@ -110,12 +76,13 @@
 
   (handle-session-prompt [h conn params]
     "Accept a user prompt. `params` has `:sessionId`, `:prompt`. Returns a
-    `PromptResponse` (`:messageId`). Processing and completion are reported
-    separately via `session/update` notifications.")
+    `PromptResponse` (`:stopReason`). Processing is reported separately via
+    `session/update` notifications.")
 
   (on-session-cancel [h conn params]
     "Notification `session/cancel` for `:sessionId`. Stop foreground work and
-    eventually emit an idle `state_update` with the `cancelled` stop reason.")
+    eventually respond to the in-flight `session/prompt` with the
+    `cancelled` stop reason.")
 
   (on-cancel-request [h conn params]
     "Protocol notification `$/cancel_request` for `:requestId`. Cancel the
@@ -156,9 +123,9 @@
                     (errors/default-error-messages errors/err-protocol-ver)
                     {:requested protocolVersion
                      :supported (vec supported)})))))
-  (handle-auth-login [_ _conn _params]
+  (handle-authenticate [_ _conn _params]
     (errors/acp-error errors/err-method))
-  (handle-auth-logout [_ _conn _params]
+  (handle-logout [_ _conn _params]
     (errors/acp-error errors/err-method))
   (handle-session-new [_ _conn _params]
     (errors/acp-error errors/err-method))
@@ -206,65 +173,28 @@
 ;; ---------------------------------------------------------------------------
 
 (def ^:private request-method->handler-fn
-  {"initialize"               #'handle-initialize
-   "auth/login"               #'handle-auth-login
-   "auth/logout"              #'handle-auth-logout
-   "session/new"              #'handle-session-new
-   "session/list"             #'handle-session-list
-   "session/delete"           #'handle-session-delete
-   "session/resume"           #'handle-session-resume
-   "session/close"            #'handle-session-close
+  {"initialize"                #'handle-initialize
+   "authenticate"              #'handle-authenticate
+   "logout"                    #'handle-logout
+   "session/new"               #'handle-session-new
+   "session/list"              #'handle-session-list
+   "session/delete"            #'handle-session-delete
+   "session/resume"            #'handle-session-resume
+   "session/close"             #'handle-session-close
    "session/set_config_option" #'handle-session-set-config-option
-   "session/prompt"           #'handle-session-prompt})
+   "session/prompt"            #'handle-session-prompt})
 
 (def ^:private request-method->params-schema
   "Maps each known request method to the malli schema for its `params`."
   {"initialize"                 schemas/InitializeRequest
+   "authenticate"               schemas/AuthenticateRequest
+   "logout"                     schemas/LogoutRequest
    "session/new"                schemas/NewSessionRequest
    "session/list"               schemas/ListSessionsRequest
    "session/delete"             schemas/DeleteSessionRequest
    "session/resume"             schemas/ResumeSessionRequest
    "session/close"              schemas/CloseSessionRequest
    "session/prompt"             schemas/PromptRequest})
-
-(def ^:private request-method->params-defaults
-  "Defaults for fields older clients may omit even though the current schema
-  marks them required. The JSON schema marks these fields with
-  `x-deserialize-default-on-*`, so a missing/`nil` value means the protocol
-  default rather than invalid params."
-  {"session/new" {:mcpServers []}})
-
-(defn- normalize-prompt-content
-  "Older clients sent text content as `{:type \"text\" :content \"...\"}`;
-  the current schema calls the payload `:text`. Add the new key while keeping
-  the old one, which handlers using the legacy shape still read."
-  [prompt]
-  (if (sequential? prompt)
-    (mapv (fn [block]
-            (if (and (map? block)
-                     (= "text" (:type block))
-                     (string? (:content block))
-                     (not (contains? block :text)))
-              (assoc block :text (:content block))
-              block))
-          prompt)
-    prompt))
-
-(defn- params-with-defaults
-  [method params]
-  (let [params   (or params {})
-        defaults (request-method->params-defaults method)
-        params   (if (seq defaults)
-                   (reduce-kv (fn [m k v]
-                                (if (nil? (get m k))
-                                  (assoc m k v)
-                                  m))
-                              params
-                              defaults)
-                   params)]
-    (case method
-      "session/prompt" (update params :prompt normalize-prompt-content)
-      params)))
 
 (def ^:private notification-method->handler-fn
   {"session/cancel"     #'on-session-cancel
@@ -348,12 +278,6 @@
 ;; Convenience senders for common agent -> client messages
 ;; ---------------------------------------------------------------------------
 
-(def ^:private legacy-session-update-kinds
-  "`sessionUpdate` values used by older ACP revisions. They are still sent
-  verbatim, but the current `SessionUpdate` schema only knows the newer
-  variants."
-  #{"user_message" "agent_message" "state_update"})
-
 (defn send-session-update
   "Send a `session/update` notification carrying one `SessionUpdate` for
   `session-id`. `update` is the full update map including its `:sessionUpdate`
@@ -361,10 +285,7 @@
   {:type \"text\" :text \"...\"}}`)."
   [conn sid update]
   (rt/validate! schemas/SessionId sid "send-session-update sessionId")
-  ;; Accept legacy update kinds as-is; validate everything else against the
-  ;; generated schema so malformed current-protocol updates are caught early.
-  (when-not (contains? legacy-session-update-kinds (:sessionUpdate update))
-    (rt/validate! schemas/SessionUpdate update "send-session-update update"))
+  (rt/validate! schemas/SessionUpdate update "send-session-update update")
   (jsonrpc/send-notification conn "session/update"
                      {:sessionId sid :update update}))
 
@@ -382,38 +303,14 @@
       :content       (schemas/->ContentBlock
                       (assoc (schemas/->TextContent content) :type "text"))})))
 
-(defn- legacy-permission-request?
-  "True for the older `session/request_permission` shape, which used a
-  `:title` instead of the current required `:toolCall`."
-  [opts]
-  (and (map? opts)
-       (not (contains? opts :toolCall))
-       (contains? opts :title)))
-
 (defn request-permission
   "Send a `session/request_permission` request and return its promise. Blocks
   the caller only if they `await-request` the result. `opts` is the
   `RequestPermissionRequest` body (`:sessionId`, `:toolCall`, `:options`,
-  optional `:_meta`). Older clients may omit `:toolCall` and use `:title`;
-  those requests are forwarded unchanged."
-  ([conn opts]
-   (when-not (legacy-permission-request? opts)
-     (rt/validate! schemas/RequestPermissionRequest opts "request-permission"))
-   (jsonrpc/send-request conn "session/request_permission" opts)))
-
-(defn create-elicitation
-  "Send an `elicitation/create` request and return its promise. `opts` is the
-  `CreateElicitationRequest` body."
-  ([conn opts]
-   (rt/validate! schemas/CreateElicitationRequest opts "create-elicitation")
-   (jsonrpc/send-request conn "elicitation/create" opts)))
-
-(defn complete-elicitation
-  "Send an `elicitation/complete` notification for `elicitation-id`."
-  [conn elicitation-id]
-  (rt/validate! schemas/ElicitationId elicitation-id "complete-elicitation elicitationId")
-  (jsonrpc/send-notification conn "elicitation/complete"
-                     {:elicitationId elicitation-id}))
+  optional `:_meta`)."
+  [conn opts]
+  (rt/validate! schemas/RequestPermissionRequest opts "request-permission")
+  (jsonrpc/send-request conn "session/request_permission" opts))
 
 ;; ---------------------------------------------------------------------------
 ;; Input: classification & dispatch
@@ -425,21 +322,20 @@
   params are validated first and an `err-params` error is returned on
   failure."
   [conn handler-fn-var method params]
-  (let [params (params-with-defaults method params)]
-    (try
-      (when-let [schema (request-method->params-schema method)]
-        (rt/validate! schema params (str "params for " method)))
-      (@handler-fn-var (:handler conn) conn params)
-      (catch clojure.lang.ExceptionInfo e
-        (if-let [errors (-> (ex-data e) :errors)]
-          ;; `rt/validate!` has already logged the validation failure. Keep the
-          ;; raw Malli schema out of the response data; it is not JSON.
-          (errors/acp-error errors/err-params
-                            (errors/default-error-messages errors/err-params)
-                            (-> (ex-data e) (dissoc :schema)))
-            (errors/ex->acp-error e)))
-      (catch Throwable e
-        (errors/ex->acp-error e)))))
+  (try
+    (when-let [schema (request-method->params-schema method)]
+      (rt/validate! schema params (str "params for " method)))
+    (@handler-fn-var (:handler conn) conn params)
+    (catch clojure.lang.ExceptionInfo e
+      (if-let [errors (-> (ex-data e) :errors)]
+        ;; `rt/validate!` has already logged the validation failure. Keep the
+        ;; raw Malli schema out of the response data; it is not JSON.
+        (errors/acp-error errors/err-params
+                          (errors/default-error-messages errors/err-params)
+                          (-> (ex-data e) (dissoc :schema)))
+        (errors/ex->acp-error e)))
+    (catch Throwable e
+      (errors/ex->acp-error e))))
 
 (defn- resolve-result
   "Normalize a handler return value into either `{:result ...}` or

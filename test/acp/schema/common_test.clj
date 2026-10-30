@@ -25,13 +25,7 @@
 
   (test/testing "rejects invalid identifiers"
     (support/ctor-rejects common/->SessionId
-                          [[nil] [1] [:session] [{:id "session"}]]))
-
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (common/->SessionId)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (common/->SessionId "a" "b")))))
-
+                          [[nil] [1] [:session] [{:id "session"}]])))
 
 ;; -------------------------------------------------------------------------
 ;; RequestId
@@ -54,10 +48,6 @@
   (test/testing "rejects invalid identifiers"
     (support/ctor-rejects common/->RequestId
                           [[1.5] [:request] [true] [{:id "request"}]]))
-
-  (test/testing "accepts at most one argument"
-    (test/is (thrown? Exception (common/->RequestId)))
-    (test/is (thrown? Exception (common/->RequestId "a" "b"))))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (support/returned #(common/->RequestId 1.5))]

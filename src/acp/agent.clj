@@ -437,8 +437,7 @@
           (errors/acp-error errors/err-params
                             (errors/default-error-messages errors/err-params)
                             (-> (ex-data e) (dissoc :schema)))
-          (do
-            (errors/ex->acp-error e))))
+            (errors/ex->acp-error e)))
       (catch Throwable e
         (errors/ex->acp-error e)))))
 
@@ -626,8 +625,7 @@
     (process-entry conn parsed)
 
     :else
-    (do
-      (jsonrpc/write-message conn (jsonrpc/error-envelope nil (errors/acp-error errors/err-invalid))))))
+      (jsonrpc/write-message conn (jsonrpc/error-envelope nil (errors/acp-error errors/err-invalid)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Reader loop
@@ -651,8 +649,7 @@
                                  (jsonrpc/error-envelope nil (errors/acp-error errors/err-parse)))))))
           (recur))
         ;; EOF: stop.
-        (do
-          nil)))))
+          nil))))
 
 (defn run
   "Start the agent: read ACP messages from stdin until EOF, dispatching to

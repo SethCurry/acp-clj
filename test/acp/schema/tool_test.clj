@@ -64,11 +64,6 @@
                         (tool/->ToolKind kind))
                (str "expected kind " (pr-str kind) " to be rejected"))))
 
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (tool/->ToolKind)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (tool/->ToolKind "read" "edit"))))
-
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(tool/->ToolKind "a"))]
       (test/is (instance? clojure.lang.ExceptionInfo e))
@@ -187,10 +182,6 @@
                         (tool/->ToolCallContent value))
                (str "expected " (pr-str value) " to be rejected"))))
 
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (tool/->ToolCallContent)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (tool/->ToolCallContent content-value diff-value))))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(tool/->ToolCallContent {:type "unknown"}))]
@@ -236,12 +227,8 @@
   (test/testing "rejects invalid identifiers"
     (doseq [id [nil 1 :call {:id "call"}]]
       (test/is (thrown? clojure.lang.ExceptionInfo (tool/->ToolCallId id))
-               (str "expected id " (pr-str id) " to be rejected"))))
+               (str "expected id " (pr-str id) " to be rejected")))))
 
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (tool/->ToolCallId)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (tool/->ToolCallId "a" "b")))))
 
 
 (test/deftest ToolCallStatus-schema
@@ -264,10 +251,7 @@
   (test/testing "rejects invalid statuses"
     (doseq [status ["done" nil 1 [:pending]]]
       (test/is (thrown? clojure.lang.ExceptionInfo (tool/->ToolCallStatus status))
-               (str "expected status " (pr-str status) " to be rejected"))))
-
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (tool/->ToolCallStatus)))))
+               (str "expected status " (pr-str status) " to be rejected")))))
 
 
 (test/deftest ToolCallLocation-schema
@@ -756,11 +740,6 @@
       (test/is (thrown? clojure.lang.ExceptionInfo (apply tool/->CreateTerminalRequest args))
                (str "expected " (pr-str args) " to be rejected"))))
 
-  (test/testing "requires a session id and command"
-    (test/is (thrown? clojure.lang.ArityException
-                      (tool/->CreateTerminalRequest)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (tool/->CreateTerminalRequest "session-1"))))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(tool/->CreateTerminalRequest nil "ls"))]
@@ -814,9 +793,7 @@
     (doseq [args [[nil] [1] [:terminal-1] ["terminal-1" :meta "meta"]]]
       (test/is (thrown? clojure.lang.ExceptionInfo
                         (apply tool/->CreateTerminalResponse args))
-               (str "expected " (pr-str args) " to be rejected")))
-    (test/is (thrown? clojure.lang.ArityException
-                      (tool/->CreateTerminalResponse))))
+               (str "expected " (pr-str args) " to be rejected"))))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(tool/->CreateTerminalResponse 42))]

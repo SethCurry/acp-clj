@@ -105,16 +105,14 @@
    (let [envelope (deref promise timeout-ms ::timeout)]
      (cond
        (identical? envelope ::timeout)
-       (do
          (throw (ex-info "ACP request timed out"
-                         {:acp/error (errors/acp-error errors/err-internal "ACP request timed out")})))
+                         {:acp/error (errors/acp-error errors/err-internal "ACP request timed out")}))
 
        (:error envelope)
-       (do
          (throw (ex-info (-> envelope :error :message)
                          {:acp/error (errors/->AcpError
                                        (-> envelope :error :code)
                                        (-> envelope :error :message)
-                                       (-> envelope :error :data))})))
+                                       (-> envelope :error :data))}))
 
        :else (:result envelope)))))

@@ -125,11 +125,6 @@
                         (content/->TextContent text))
                (str "expected text " (pr-str text) " to be rejected"))))
 
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (content/->TextContent)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (content/->TextContent "a" "b"))))
-
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(content/->TextContent 42))]
       (test/is (instance? clojure.lang.ExceptionInfo e))

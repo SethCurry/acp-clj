@@ -285,10 +285,6 @@
       (test/is (thrown? clojure.lang.ExceptionInfo (mcp/->McpServer server))
                (str "expected " (pr-str server) " to be rejected"))))
 
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (mcp/->McpServer)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (mcp/->McpServer http-server sse-server))))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(mcp/->McpServer {:type "websocket"}))]

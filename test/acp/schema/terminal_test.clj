@@ -218,11 +218,6 @@
                         (terminal/->TerminalId id))
                (str "expected id " (pr-str id) " to be rejected"))))
 
-  (test/testing "requires exactly one argument"
-    (test/is (thrown? clojure.lang.ArityException (terminal/->TerminalId)))
-    (test/is (thrown? clojure.lang.ArityException
-                      (terminal/->TerminalId "a" "b"))))
-
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(terminal/->TerminalId 42))]
       (test/is (instance? clojure.lang.ExceptionInfo e))

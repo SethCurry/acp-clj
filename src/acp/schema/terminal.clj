@@ -1,4 +1,15 @@
 (ns acp.schema.terminal
+  "Terminal data schemas.
+
+  These are the payload types embedded in tool call content and terminal
+  output.  The `terminal/*` method request and response schemas live in
+  `acp.schema.tool`, alongside the tool call schemas that use them.
+
+  Constructors follow the `acp.schema.tool` convention: required fields are
+  positional arguments, optional fields are keyword arguments (`_meta` is
+  passed as `:meta`) and default to `nil` in the returned map.  A keyword
+  argument that the protocol does not allow to be `nil` is only added to the
+  map when it is supplied."
   (:require [acp.schema-runtime :as rt]))
 
 
@@ -15,13 +26,12 @@
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
 (defn ->TerminalExitStatus
+  "Create a `TerminalExitStatus` value."
   [& {:keys [exitCode signal meta]}]
-  (let [value {
-    :exitCode exitCode
-    :signal signal
-    :_meta meta
-    }]
-  (rt/validate! #'TerminalExitStatus value "TerminalExitStatus")))
+  (let [value {:exitCode exitCode
+               :signal   signal
+               :_meta    meta}]
+    (rt/validate! #'TerminalExitStatus value "TerminalExitStatus")))
 
 
 ;; -------------------------------------------------------------------------
@@ -40,13 +50,11 @@
 (defn ->TerminalOutputResponse
   "Create a `TerminalOutputResponse` value."
   [output truncated & {:keys [exitStatus meta]}]
-  (let [value {
-    :output output
-    :truncated  truncated
-    :exitStatus exitStatus
-    :_meta meta
-    }]
-  (rt/validate! #'TerminalOutputResponse value "TerminalOutputResponse")))
+  (let [value {:output     output
+               :truncated  truncated
+               :exitStatus exitStatus
+               :_meta      meta}]
+    (rt/validate! #'TerminalOutputResponse value "TerminalOutputResponse")))
 
 
 ;; -------------------------------------------------------------------------
@@ -74,11 +82,9 @@
    [:terminalId #'TerminalId]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->Terminal
+(defn ->Terminal
   "Create a `Terminal` value."
-  (rt/make-object-constructor
-    #'Terminal
-    "Terminal"
-    [{:key :terminalId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [terminalId & {:keys [meta]}]
+  (let [value {:terminalId terminalId
+               :_meta      meta}]
+    (rt/validate! #'Terminal value "Terminal")))

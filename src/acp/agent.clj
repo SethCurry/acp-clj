@@ -371,13 +371,16 @@
 (defn send-agent-message-chunk
   "Send a plain-text `agent_message_chunk` `session/update` for `sid`.
 
-  `content` is the text to display. The chunk is built with
+  `content` is the text to display. `ContentBlock` is a union discriminated by
+  `:type`, so the text payload built by `schemas/->TextContent` is tagged as
+  `\"text\"` to make it a content block. The chunk is built with
   `schemas/->SessionUpdate` so it is validated before it goes on the wire."
   [conn sid content]
   (send-session-update conn sid
     (schemas/->SessionUpdate
      {:sessionUpdate "agent_message_chunk"
-      :content       (schemas/->TextContent content)})))
+      :content       (schemas/->ContentBlock
+                      (assoc (schemas/->TextContent content) :type "text"))})))
 
 (defn- legacy-permission-request?
   "True for the older `session/request_permission` shape, which used a

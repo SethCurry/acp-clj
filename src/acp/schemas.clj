@@ -8,18 +8,27 @@
 ;; This is ordinary Clojure source, so it can be compiled, read and
 ;; commented.  Regenerating rewrites every form below this header; keep
 ;; notes that must survive in a separate file.
+;;
+;; The protocol types that have been split into their own namespaces
+;; (`acp.schema.content`, `acp.schema.common`, `acp.schema.terminal`,
+;; `acp.schema.tool`, `acp.schema.mcp`, `acp.schema.session`) are re-exported
+;; here as plain `def` aliases, so `acp.schemas` stays the single import for
+;; callers.  The aliases and the `declare` below are maintained by hand.
 ;; -------------------------------------------------------------------------
 
 (ns acp.schemas
   "Malli schemas for the Agent Client Protocol.
 
-  Generated from acp/schema.json by `acp.schema-tools`."
+  Generated from acp/schema.json by `acp.schema-tools`. Types that were
+  moved into `acp.schema.*` namespaces are re-exported here."
   (:require [acp.schema-runtime :as rt]
-    [acp.schema.content :as content]
-    [acp.schema.terminal :as terminal]
-    [acp.schema.tool :as tool]
-          [malli.core :as m]
-          [malli.error :as me]))
+            [acp.schema.content :as content]
+            [acp.schema.terminal :as terminal]
+            [acp.schema.tool :as tool]
+            [acp.schema.mcp :as mcp]
+            [acp.schema.session :as session]
+            [malli.core :as m]
+            [malli.error :as me]))
 
 ;; ---------------------------------------------------------------------------
 ;; Validation
@@ -91,173 +100,368 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def Terminal terminal/Terminal)
 (def ->Terminal terminal/->Terminal)
 
+(def CreateTerminalRequest tool/CreateTerminalRequest)
+(def ->CreateTerminalRequest tool/->CreateTerminalRequest)
+
+(def CreateTerminalResponse tool/CreateTerminalResponse)
+(def ->CreateTerminalResponse tool/->CreateTerminalResponse)
+
+(def TerminalOutputRequest tool/TerminalOutputRequest)
+(def ->TerminalOutputRequest tool/->TerminalOutputRequest)
+
+(def KillTerminalRequest tool/KillTerminalRequest)
+(def ->KillTerminalRequest tool/->KillTerminalRequest)
+
+(def KillTerminalResponse tool/KillTerminalResponse)
+(def ->KillTerminalResponse tool/->KillTerminalResponse)
+
+(def WaitForTerminalExitRequest tool/WaitForTerminalExitRequest)
+(def ->WaitForTerminalExitRequest tool/->WaitForTerminalExitRequest)
+
+(def WaitForTerminalExitResponse tool/WaitForTerminalExitResponse)
+(def ->WaitForTerminalExitResponse tool/->WaitForTerminalExitResponse)
+
+(def ReleaseTerminalRequest tool/ReleaseTerminalRequest)
+(def ->ReleaseTerminalRequest tool/->ReleaseTerminalRequest)
+
+(def ReleaseTerminalResponse tool/ReleaseTerminalResponse)
+(def ->ReleaseTerminalResponse tool/->ReleaseTerminalResponse)
+
 (def ToolKind tool/ToolKind)
 (def ->ToolKind tool/->ToolKind)
 
 (def ToolCallContent tool/ToolCallContent)
 (def ->ToolCallContent tool/->ToolCallContent)
 
+(def EnvVariable mcp/EnvVariable)
+(def ->EnvVariable mcp/->EnvVariable)
+
+(def HttpHeader mcp/HttpHeader)
+(def ->HttpHeader mcp/->HttpHeader)
+
+(def McpServer mcp/McpServer)
+(def ->McpServer mcp/->McpServer)
+
+(def McpServerHttp mcp/McpServerHttp)
+(def ->McpServerHttp mcp/->McpServerHttp)
+
+(def McpServerSse mcp/McpServerSse)
+(def ->McpServerSse mcp/->McpServerSse)
+
+(def McpServerStdio mcp/McpServerStdio)
+(def ->McpServerStdio mcp/->McpServerStdio)
+
+
+(def ToolCall tool/ToolCall)
+(def ->ToolCall tool/->ToolCall)
+
+(def ToolCallId tool/ToolCallId)
+(def ->ToolCallId tool/->ToolCallId)
+
+(def ToolCallLocation tool/ToolCallLocation)
+(def ->ToolCallLocation tool/->ToolCallLocation)
+
+(def ToolCallStatus tool/ToolCallStatus)
+(def ->ToolCallStatus tool/->ToolCallStatus)
+
+(def ToolCallUpdate tool/ToolCallUpdate)
+(def ->ToolCallUpdate tool/->ToolCallUpdate)
+
+
+(def AvailableCommand session/AvailableCommand)
+(def ->AvailableCommand session/->AvailableCommand)
+
+(def AvailableCommandInput session/AvailableCommandInput)
+(def ->AvailableCommandInput session/->AvailableCommandInput)
+
+(def AvailableCommandsUpdate session/AvailableCommandsUpdate)
+(def ->AvailableCommandsUpdate session/->AvailableCommandsUpdate)
+
+(def BooleanConfigOptionCapabilities session/BooleanConfigOptionCapabilities)
+(def ->BooleanConfigOptionCapabilities session/->BooleanConfigOptionCapabilities)
+
+(def CancelNotification session/CancelNotification)
+(def ->CancelNotification session/->CancelNotification)
+
+(def ClientSessionCapabilities session/ClientSessionCapabilities)
+(def ->ClientSessionCapabilities session/->ClientSessionCapabilities)
+
+(def CloseSessionRequest session/CloseSessionRequest)
+(def ->CloseSessionRequest session/->CloseSessionRequest)
+
+(def CloseSessionResponse session/CloseSessionResponse)
+(def ->CloseSessionResponse session/->CloseSessionResponse)
+
+(def CompactionCapabilities session/CompactionCapabilities)
+(def ->CompactionCapabilities session/->CompactionCapabilities)
+
+(def CompactionId session/CompactionId)
+(def ->CompactionId session/->CompactionId)
+
+(def CompactionStatus session/CompactionStatus)
+(def ->CompactionStatus session/->CompactionStatus)
+
+(def CompactionSummaryChunk session/CompactionSummaryChunk)
+(def ->CompactionSummaryChunk session/->CompactionSummaryChunk)
+
+(def CompactionUpdate session/CompactionUpdate)
+(def ->CompactionUpdate session/->CompactionUpdate)
+
+(def ConfigOptionUpdate session/ConfigOptionUpdate)
+(def ->ConfigOptionUpdate session/->ConfigOptionUpdate)
+
+(def ContentChunk session/ContentChunk)
+(def ->ContentChunk session/->ContentChunk)
+
+(def Cost session/Cost)
+(def ->Cost session/->Cost)
+
+(def CurrentModeUpdate session/CurrentModeUpdate)
+(def ->CurrentModeUpdate session/->CurrentModeUpdate)
+
+(def DeleteSessionRequest session/DeleteSessionRequest)
+(def ->DeleteSessionRequest session/->DeleteSessionRequest)
+
+(def DeleteSessionResponse session/DeleteSessionResponse)
+(def ->DeleteSessionResponse session/->DeleteSessionResponse)
+
+(def ListSessionsRequest session/ListSessionsRequest)
+(def ->ListSessionsRequest session/->ListSessionsRequest)
+
+(def ListSessionsResponse session/ListSessionsResponse)
+(def ->ListSessionsResponse session/->ListSessionsResponse)
+
+(def LoadSessionRequest session/LoadSessionRequest)
+(def ->LoadSessionRequest session/->LoadSessionRequest)
+
+(def LoadSessionResponse session/LoadSessionResponse)
+(def ->LoadSessionResponse session/->LoadSessionResponse)
+
+(def MessageId session/MessageId)
+(def ->MessageId session/->MessageId)
+
+(def NewSessionRequest session/NewSessionRequest)
+(def ->NewSessionRequest session/->NewSessionRequest)
+
+(def NewSessionResponse session/NewSessionResponse)
+(def ->NewSessionResponse session/->NewSessionResponse)
+
+(def Notice session/Notice)
+(def ->Notice session/->Notice)
+
+(def NoticeCapabilities session/NoticeCapabilities)
+(def ->NoticeCapabilities session/->NoticeCapabilities)
+
+(def NoticeSeverity session/NoticeSeverity)
+(def ->NoticeSeverity session/->NoticeSeverity)
+
+(def PermissionOption session/PermissionOption)
+(def ->PermissionOption session/->PermissionOption)
+
+(def PermissionOptionId session/PermissionOptionId)
+(def ->PermissionOptionId session/->PermissionOptionId)
+
+(def PermissionOptionKind session/PermissionOptionKind)
+(def ->PermissionOptionKind session/->PermissionOptionKind)
+
+(def Plan session/Plan)
+(def ->Plan session/->Plan)
+
+(def PlanEntry session/PlanEntry)
+(def ->PlanEntry session/->PlanEntry)
+
+(def PlanEntryPriority session/PlanEntryPriority)
+(def ->PlanEntryPriority session/->PlanEntryPriority)
+
+(def PlanEntryStatus session/PlanEntryStatus)
+(def ->PlanEntryStatus session/->PlanEntryStatus)
+
+(def PromptRequest session/PromptRequest)
+(def ->PromptRequest session/->PromptRequest)
+
+(def PromptResponse session/PromptResponse)
+(def ->PromptResponse session/->PromptResponse)
+
+(def RequestPermissionOutcome session/RequestPermissionOutcome)
+(def ->RequestPermissionOutcome session/->RequestPermissionOutcome)
+
+(def RequestPermissionRequest session/RequestPermissionRequest)
+(def ->RequestPermissionRequest session/->RequestPermissionRequest)
+
+(def RequestPermissionResponse session/RequestPermissionResponse)
+(def ->RequestPermissionResponse session/->RequestPermissionResponse)
+
+(def ResumeSessionRequest session/ResumeSessionRequest)
+(def ->ResumeSessionRequest session/->ResumeSessionRequest)
+
+(def ResumeSessionResponse session/ResumeSessionResponse)
+(def ->ResumeSessionResponse session/->ResumeSessionResponse)
+
+(def SelectedPermissionOutcome session/SelectedPermissionOutcome)
+(def ->SelectedPermissionOutcome session/->SelectedPermissionOutcome)
+
+(def SessionAdditionalDirectoriesCapabilities session/SessionAdditionalDirectoriesCapabilities)
+(def ->SessionAdditionalDirectoriesCapabilities session/->SessionAdditionalDirectoriesCapabilities)
+
+(def SessionCapabilities session/SessionCapabilities)
+(def ->SessionCapabilities session/->SessionCapabilities)
+
+(def SessionCloseCapabilities session/SessionCloseCapabilities)
+(def ->SessionCloseCapabilities session/->SessionCloseCapabilities)
+
+(def SessionConfigBoolean session/SessionConfigBoolean)
+(def ->SessionConfigBoolean session/->SessionConfigBoolean)
+
+(def SessionConfigGroupId session/SessionConfigGroupId)
+(def ->SessionConfigGroupId session/->SessionConfigGroupId)
+
+(def SessionConfigId session/SessionConfigId)
+(def ->SessionConfigId session/->SessionConfigId)
+
+(def SessionConfigOption session/SessionConfigOption)
+(def ->SessionConfigOption session/->SessionConfigOption)
+
+(def SessionConfigOptionCategory session/SessionConfigOptionCategory)
+(def ->SessionConfigOptionCategory session/->SessionConfigOptionCategory)
+
+(def SessionConfigOptionsCapabilities session/SessionConfigOptionsCapabilities)
+(def ->SessionConfigOptionsCapabilities session/->SessionConfigOptionsCapabilities)
+
+(def SessionConfigSelect session/SessionConfigSelect)
+(def ->SessionConfigSelect session/->SessionConfigSelect)
+
+(def SessionConfigSelectGroup session/SessionConfigSelectGroup)
+(def ->SessionConfigSelectGroup session/->SessionConfigSelectGroup)
+
+(def SessionConfigSelectOption session/SessionConfigSelectOption)
+(def ->SessionConfigSelectOption session/->SessionConfigSelectOption)
+
+(def SessionConfigSelectOptions session/SessionConfigSelectOptions)
+(def ->SessionConfigSelectOptions session/->SessionConfigSelectOptions)
+
+(def SessionConfigValueId session/SessionConfigValueId)
+(def ->SessionConfigValueId session/->SessionConfigValueId)
+
+(def SessionDeleteCapabilities session/SessionDeleteCapabilities)
+(def ->SessionDeleteCapabilities session/->SessionDeleteCapabilities)
+
+(def SessionId session/SessionId)
+(def ->SessionId session/->SessionId)
+
+(def SessionInfo session/SessionInfo)
+(def ->SessionInfo session/->SessionInfo)
+
+(def SessionInfoUpdate session/SessionInfoUpdate)
+(def ->SessionInfoUpdate session/->SessionInfoUpdate)
+
+(def SessionListCapabilities session/SessionListCapabilities)
+(def ->SessionListCapabilities session/->SessionListCapabilities)
+
+(def SessionMode session/SessionMode)
+(def ->SessionMode session/->SessionMode)
+
+(def SessionModeId session/SessionModeId)
+(def ->SessionModeId session/->SessionModeId)
+
+(def SessionModeState session/SessionModeState)
+(def ->SessionModeState session/->SessionModeState)
+
+(def SessionNotification session/SessionNotification)
+(def ->SessionNotification session/->SessionNotification)
+
+(def SessionResumeCapabilities session/SessionResumeCapabilities)
+(def ->SessionResumeCapabilities session/->SessionResumeCapabilities)
+
+(def SessionUpdate session/SessionUpdate)
+(def ->SessionUpdate session/->SessionUpdate)
+
+(def SetSessionConfigOptionRequest session/SetSessionConfigOptionRequest)
+(def ->SetSessionConfigOptionRequest session/->SetSessionConfigOptionRequest)
+
+(def SetSessionConfigOptionResponse session/SetSessionConfigOptionResponse)
+(def ->SetSessionConfigOptionResponse session/->SetSessionConfigOptionResponse)
+
+(def SetSessionModeRequest session/SetSessionModeRequest)
+(def ->SetSessionModeRequest session/->SetSessionModeRequest)
+
+(def SetSessionModeResponse session/SetSessionModeResponse)
+(def ->SetSessionModeResponse session/->SetSessionModeResponse)
+
+(def StopReason session/StopReason)
+(def ->StopReason session/->StopReason)
+
+(def UnstructuredCommandInput session/UnstructuredCommandInput)
+(def ->UnstructuredCommandInput session/->UnstructuredCommandInput)
+
+(def UsageUpdate session/UsageUpdate)
+(def ->UsageUpdate session/->UsageUpdate)
+
 ;; Schemas refer to one another, so declare every name up front.
 (declare
-         AgentResponse
-         McpServerHttp
-         SessionConfigOptionCategory
-         ElicitationFormCapabilities
-         SetSessionConfigOptionRequest
-         AuthMethod
-         ListSessionsRequest
-         BooleanConfigOptionCapabilities
-         ToolCallUpdate
-         InitializeRequest
-         RequestId
-         CurrentModeUpdate
-         SessionConfigOption
-         HttpHeader
-         PermissionOptionId
-         ReadTextFileResponse
-         MessageId
-         ConfigOptionUpdate
-         SetSessionModeRequest
-         SessionId
-         ListSessionsResponse
-         WriteTextFileResponse
-         McpServerSse
-         KillTerminalRequest
-         CreateElicitationRequest
-         SessionConfigOptionsCapabilities
-         CloseSessionRequest
-         ElicitationSchemaType
-         Notice
-         WaitForTerminalExitRequest
-         ClientSessionCapabilities
-         AuthCapabilities
-         WriteTextFileRequest
-         ExtRequest
-         LoadSessionRequest
-         AuthenticateRequest
-         LogoutRequest
-         LoadSessionResponse
-         IntegerPropertySchema
-         LogoutResponse
-         SessionAdditionalDirectoriesCapabilities
-         ReleaseTerminalRequest
-         SessionModeState
-         KillTerminalResponse
-         FileSystemCapabilities
-         StopReason
-         ElicitationAcceptAction
-         SessionResumeCapabilities
-         ElicitationPropertySchema
-         McpCapabilities
-         ClientNotification
-         NoticeSeverity
-         CancelNotification
-         ExtResponse
-         McpServer
-         SessionConfigId
-         EnumOption
-         McpServerStdio
-         ToolCallLocation
-         SessionConfigGroupId
-         PermissionOption
-         SetSessionConfigOptionResponse
-         SelectedPermissionOutcome
-         SessionConfigValueId
-         SessionConfigSelectOption
-         ContentChunk
-         AuthenticateResponse
-         ErrorCode
-         MultiSelectPropertySchema
-         WaitForTerminalExitResponse
-         ElicitationFormMode
-         AgentRequest
-         StringPropertySchema
-         ToolCallStatus
-         StringMultiSelectItems
-         ElicitationSchema
-         AvailableCommandInput
-         PlanEntryStatus
-         UsageUpdate
-         InitializeResponse
-         NumberPropertySchema
-         ElicitationUrlMode
-         PromptResponse
-         CompleteElicitationNotification
-         ToolCall
-         Plan
-         ProtocolVersion
-         SessionMode
-         AvailableCommandsUpdate
-         ElicitationUrlCapabilities
-         EnvVariable
-         CreateTerminalResponse
-         SetSessionModeResponse
-         BooleanPropertySchema
-         AuthMethodAgent
-         AgentCapabilities
-         CompactionCapabilities
-         ElicitationRequestScope
-         SessionConfigSelect
-         UnstructuredCommandInput
-         SessionConfigSelectGroup
-         NewSessionResponse
-         CreateTerminalRequest
-         PermissionOptionKind
-         SessionNotification
-         Implementation
-         StringFormat
-         CancelRequestNotification
-         AuthMethodId
-         ElicitationId
-         CompactionId
-         CompactionSummaryChunk
-         MultiSelectItems
-         NewSessionRequest
-         AgentNotification
-         NoticeCapabilities
-         RequestPermissionRequest
-         SessionUpdate
-         TitledMultiSelectItems
-         ResumeSessionResponse
-         Cost
-         SessionConfigSelectOptions
-         SessionDeleteCapabilities
-         ElicitationCapabilities
-         TerminalOutputRequest
-         SessionListCapabilities
-         Error
-         DeleteSessionRequest
-         ElicitationSessionScope
-         ReleaseTerminalResponse
-         RequestPermissionResponse
-         PromptCapabilities
-         SessionConfigBoolean
-         CompactionUpdate
-         CloseSessionResponse
-         ToolCallId
-         SessionModeId
-         PlanEntryPriority
-         CompactionStatus
-         DeleteSessionResponse
-         SessionCloseCapabilities
-         ReadTextFileRequest
-         ClientResponse
-         SessionInfo
-         ResumeSessionRequest
-         PlanEntry
-         SessionCapabilities
-         PromptRequest
-         AgentAuthCapabilities
-         AuthMethodTerminal
-         CreateElicitationResponse
-         AvailableCommand
-         ElicitationContentValue
-         LogoutCapabilities
-         SessionInfoUpdate
-         ExtNotification
-         ClientCapabilities
-         RequestPermissionOutcome
-         ClientRequest)
+ AgentResponse
+ ElicitationFormCapabilities
+ AuthMethod
+ InitializeRequest
+ RequestId
+ ReadTextFileResponse
+ WriteTextFileResponse
+ CreateElicitationRequest
+ ElicitationSchemaType
+ AuthCapabilities
+ WriteTextFileRequest
+ ExtRequest
+ AuthenticateRequest
+ LogoutRequest
+ IntegerPropertySchema
+ LogoutResponse
+ FileSystemCapabilities
+ ElicitationAcceptAction
+ ElicitationPropertySchema
+ McpCapabilities
+ ClientNotification
+ ExtResponse
+ EnumOption
+ AuthenticateResponse
+ ErrorCode
+ MultiSelectPropertySchema
+ ElicitationFormMode
+ AgentRequest
+ StringPropertySchema
+ StringMultiSelectItems
+ ElicitationSchema
+ InitializeResponse
+ NumberPropertySchema
+ ElicitationUrlMode
+ CompleteElicitationNotification
+ ProtocolVersion
+ ElicitationUrlCapabilities
+ BooleanPropertySchema
+ AuthMethodAgent
+ AgentCapabilities
+ ElicitationRequestScope
+ Implementation
+ StringFormat
+ CancelRequestNotification
+ AuthMethodId
+ ElicitationId
+ MultiSelectItems
+ AgentNotification
+ TitledMultiSelectItems
+ ElicitationCapabilities
+ Error
+ ElicitationSessionScope
+ PromptCapabilities
+ ReadTextFileRequest
+ ClientResponse
+ AgentAuthCapabilities
+ AuthMethodTerminal
+ CreateElicitationResponse
+ ElicitationContentValue
+ LogoutCapabilities
+ ExtNotification
+ ClientCapabilities
+ ClientRequest
+)
 
 ;; -------------------------------------------------------------------------
 ;; AgentResponse
@@ -291,49 +495,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-value-constructor #'AgentResponse "AgentResponse"))
 
 ;; -------------------------------------------------------------------------
-;; McpServerHttp
-;; -------------------------------------------------------------------------
-
-(def McpServerHttp
-  "HTTP transport configuration for MCP."
-  [:map
-   {:closed false}
-   [:name :string]
-   [:url :string]
-   [:headers [:vector #'HttpHeader]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->McpServerHttp
-  "Create a `McpServerHttp` value."
-  (rt/make-object-constructor
-    #'McpServerHttp
-    "McpServerHttp"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :url, :required? true, :nullable? false}
-     {:key :headers, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigOptionCategory
-;; -------------------------------------------------------------------------
-
-(def SessionConfigOptionCategory
-  "Semantic category for a session configuration option. This is intended to help Clients distinguish broadly common selectors (e.g. model selector vs session mode selector vs thought/reasoning level) for UX purposes (keyboard shortcuts, icons, placement). It MUST NOT be required for correctness. Clients MUST handle missing or unknown categories gracefully. Category names beginning with `_` are free for custom use, like other ACP extension methods. Category names that do not begin with `_` are reserved for the ACP spec."
-  [:or
-   [:= "mode"]
-   [:= "model"]
-   [:= "model_config"]
-   [:= "thought_level"]
-   :string])
-
-(def ->SessionConfigOptionCategory
-  "Create a `SessionConfigOptionCategory` value."
-  (rt/make-value-constructor
-    #'SessionConfigOptionCategory
-    "SessionConfigOptionCategory"))
-
-;; -------------------------------------------------------------------------
 ;; ElicitationFormCapabilities
 ;; -------------------------------------------------------------------------
 
@@ -352,32 +513,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; SetSessionConfigOptionRequest
-;; -------------------------------------------------------------------------
-
-(def SetSessionConfigOptionRequest
-  "Request parameters for setting a session configuration option."
-  [:and
-   [:map
-    {:closed false}
-    [:sessionId #'SessionId]
-    [:configId #'SessionConfigId]
-    [:_meta {:optional true} [:maybe [:map {:closed false}]]]]
-   [:or
-    [:map {:closed false} [:type [:= "boolean"]] [:value :boolean]]
-    [:map {:closed false} [:value #'SessionConfigValueId]]]])
-
-(def ->SetSessionConfigOptionRequest
-  "Create a `SetSessionConfigOptionRequest` value."
-  (rt/make-object-constructor
-    #'SetSessionConfigOptionRequest
-    "SetSessionConfigOptionRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :configId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    true))
-
-;; -------------------------------------------------------------------------
 ;; AuthMethod
 ;; -------------------------------------------------------------------------
 
@@ -392,82 +527,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def ->AuthMethod
   "Create a `AuthMethod` value."
   (rt/make-value-constructor #'AuthMethod "AuthMethod"))
-
-;; -------------------------------------------------------------------------
-;; ListSessionsRequest
-;; -------------------------------------------------------------------------
-
-(def ListSessionsRequest
-  "Request parameters for listing existing sessions. Only available if the Agent supports the `sessionCapabilities.list` capability."
-  [:map
-   {:closed false}
-   [:cwd {:optional true} [:maybe :string]]
-   [:cursor {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ListSessionsRequest
-  "Create a `ListSessionsRequest` value."
-  (rt/make-object-constructor
-    #'ListSessionsRequest
-    "ListSessionsRequest"
-    [{:key :cwd, :required? false, :nullable? true}
-     {:key :cursor, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; BooleanConfigOptionCapabilities
-;; -------------------------------------------------------------------------
-
-(def BooleanConfigOptionCapabilities
-  "Capabilities for boolean session configuration options. Supplying `{}` means the client supports boolean session configuration options."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->BooleanConfigOptionCapabilities
-  "Create a `BooleanConfigOptionCapabilities` value."
-  (rt/make-object-constructor
-    #'BooleanConfigOptionCapabilities
-    "BooleanConfigOptionCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ToolCallUpdate
-;; -------------------------------------------------------------------------
-
-(def ToolCallUpdate
-  "An update to an existing tool call. Used to report progress and results as tools execute. All fields except the tool call ID are optional - only changed fields need to be included. See protocol docs: [Updating](https://agentclientprotocol.com/protocol/v1/tool-calls#updating)"
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]
-   [:content {:optional true} [:maybe [:vector #'ToolCallContent]]]
-   [:name {:optional true} [:maybe :string]]
-   [:toolCallId #'ToolCallId]
-   [:title {:optional true} [:maybe :string]]
-   [:locations {:optional true} [:maybe [:vector #'ToolCallLocation]]]
-   [:rawOutput {:optional true} :any]
-   [:status {:optional true} [:maybe #'ToolCallStatus]]
-   [:kind {:optional true} [:maybe #'ToolKind]]
-   [:rawInput {:optional true} :any]])
-
-(def ->ToolCallUpdate
-  "Create a `ToolCallUpdate` value."
-  (rt/make-object-constructor
-    #'ToolCallUpdate
-    "ToolCallUpdate"
-    [{:key :toolCallId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}
-     {:key :content, :required? false, :nullable? true}
-     {:key :name, :required? false, :nullable? true}
-     {:key :title, :required? false, :nullable? true}
-     {:key :locations, :required? false, :nullable? true}
-     {:key :rawOutput, :required? false, :nullable? false}
-     {:key :status, :required? false, :nullable? true}
-     {:key :kind, :required? false, :nullable? true}
-     {:key :rawInput, :required? false, :nullable? false}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; InitializeRequest
@@ -506,94 +565,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-value-constructor #'RequestId "RequestId"))
 
 ;; -------------------------------------------------------------------------
-;; CurrentModeUpdate
-;; -------------------------------------------------------------------------
-
-(def CurrentModeUpdate
-  "The current mode of the session has changed See protocol docs: [Session Modes](https://agentclientprotocol.com/protocol/v1/session-modes)"
-  [:map
-   {:closed false}
-   [:currentModeId #'SessionModeId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CurrentModeUpdate
-  "Create a `CurrentModeUpdate` value."
-  (rt/make-object-constructor
-    #'CurrentModeUpdate
-    "CurrentModeUpdate"
-    [{:key :currentModeId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigOption
-;; -------------------------------------------------------------------------
-
-(def SessionConfigOption
-  "A session configuration option selector and its current state."
-  [:and
-   [:map
-    {:closed false}
-    [:id #'SessionConfigId]
-    [:name :string]
-    [:description {:optional true} [:maybe :string]]
-    [:category {:optional true} [:maybe #'SessionConfigOptionCategory]]
-    [:_meta {:optional true} [:maybe [:map {:closed false}]]]]
-   [:or
-    [:and
-     [:map {:closed false} [:type [:= "select"]]]
-     #'SessionConfigSelect]
-    [:and
-     [:map {:closed false} [:type [:= "boolean"]]]
-     #'SessionConfigBoolean]]])
-
-(def ->SessionConfigOption
-  "Create a `SessionConfigOption` value."
-  (rt/make-object-constructor
-    #'SessionConfigOption
-    "SessionConfigOption"
-    [{:key :id, :required? true, :nullable? false}
-     {:key :name, :required? true, :nullable? false}
-     {:key :description, :required? false, :nullable? true}
-     {:key :category, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    true))
-
-;; -------------------------------------------------------------------------
-;; HttpHeader
-;; -------------------------------------------------------------------------
-
-(def HttpHeader
-  "An HTTP header to set when making requests to the MCP server."
-  [:map
-   {:closed false}
-   [:name :string]
-   [:value :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->HttpHeader
-  "Create a `HttpHeader` value."
-  (rt/make-object-constructor
-    #'HttpHeader
-    "HttpHeader"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :value, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; PermissionOptionId
-;; -------------------------------------------------------------------------
-
-(def PermissionOptionId
-  "Unique identifier for a permission option."
-  :string)
-
-(def ->PermissionOptionId
-  "Create a `PermissionOptionId` value."
-  (rt/make-value-constructor #'PermissionOptionId "PermissionOptionId"))
-
-;; -------------------------------------------------------------------------
 ;; ReadTextFileResponse
 ;; -------------------------------------------------------------------------
 
@@ -614,94 +585,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; MessageId
-;; -------------------------------------------------------------------------
-
-(def MessageId
-  "Unique identifier for a message within a session."
-  :string)
-
-(def ->MessageId
-  "Create a `MessageId` value."
-  (rt/make-value-constructor #'MessageId "MessageId"))
-
-;; -------------------------------------------------------------------------
-;; ConfigOptionUpdate
-;; -------------------------------------------------------------------------
-
-(def ConfigOptionUpdate
-  "Session configuration options have been updated."
-  [:map
-   {:closed false}
-   [:configOptions [:vector #'SessionConfigOption]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ConfigOptionUpdate
-  "Create a `ConfigOptionUpdate` value."
-  (rt/make-object-constructor
-    #'ConfigOptionUpdate
-    "ConfigOptionUpdate"
-    [{:key :configOptions, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SetSessionModeRequest
-;; -------------------------------------------------------------------------
-
-(def SetSessionModeRequest
-  "Request parameters for setting a session mode."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:modeId #'SessionModeId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SetSessionModeRequest
-  "Create a `SetSessionModeRequest` value."
-  (rt/make-object-constructor
-    #'SetSessionModeRequest
-    "SetSessionModeRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :modeId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionId
-;; -------------------------------------------------------------------------
-
-(def SessionId
-  "A unique identifier for a conversation session between a client and agent. Sessions maintain their own context, conversation history, and state, allowing multiple independent interactions with the same agent. See protocol docs: [Session ID](https://agentclientprotocol.com/protocol/v1/session-setup#session-id)"
-  :string)
-
-(def ->SessionId
-  "Create a `SessionId` value."
-  (rt/make-value-constructor #'SessionId "SessionId"))
-
-;; -------------------------------------------------------------------------
-;; ListSessionsResponse
-;; -------------------------------------------------------------------------
-
-(def ListSessionsResponse
-  "Response from listing sessions."
-  [:map
-   {:closed false}
-   [:sessions [:vector #'SessionInfo]]
-   [:nextCursor {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ListSessionsResponse
-  "Create a `ListSessionsResponse` value."
-  (rt/make-object-constructor
-    #'ListSessionsResponse
-    "ListSessionsResponse"
-    [{:key :sessions, :required? true, :nullable? false}
-     {:key :nextCursor, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; WriteTextFileResponse
 ;; -------------------------------------------------------------------------
 
@@ -717,52 +600,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     #'WriteTextFileResponse
     "WriteTextFileResponse"
     [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; McpServerSse
-;; -------------------------------------------------------------------------
-
-(def McpServerSse
-  "SSE transport configuration for MCP."
-  [:map
-   {:closed false}
-   [:name :string]
-   [:url :string]
-   [:headers [:vector #'HttpHeader]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->McpServerSse
-  "Create a `McpServerSse` value."
-  (rt/make-object-constructor
-    #'McpServerSse
-    "McpServerSse"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :url, :required? true, :nullable? false}
-     {:key :headers, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; KillTerminalRequest
-;; -------------------------------------------------------------------------
-
-(def KillTerminalRequest
-  "Request to kill a terminal without releasing it."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:terminalId #'TerminalId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->KillTerminalRequest
-  "Create a `KillTerminalRequest` value."
-  (rt/make-object-constructor
-    #'KillTerminalRequest
-    "KillTerminalRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :terminalId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -797,46 +634,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     true))
 
 ;; -------------------------------------------------------------------------
-;; SessionConfigOptionsCapabilities
-;; -------------------------------------------------------------------------
-
-(def SessionConfigOptionsCapabilities
-  "Session configuration option capabilities supported by the client."
-  [:map
-   {:closed false}
-   [:boolean {:optional true} [:maybe #'BooleanConfigOptionCapabilities]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionConfigOptionsCapabilities
-  "Create a `SessionConfigOptionsCapabilities` value."
-  (rt/make-object-constructor
-    #'SessionConfigOptionsCapabilities
-    "SessionConfigOptionsCapabilities"
-    [{:key :boolean, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; CloseSessionRequest
-;; -------------------------------------------------------------------------
-
-(def CloseSessionRequest
-  "Request parameters for closing an active session. If supported, the agent **must** cancel any ongoing work related to the session (treat it as if `session/cancel` was called) and then free up any resources associated with the session. Only available if the Agent supports the `sessionCapabilities.close` capability."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CloseSessionRequest
-  "Create a `CloseSessionRequest` value."
-  (rt/make-object-constructor
-    #'CloseSessionRequest
-    "CloseSessionRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ElicitationSchemaType
 ;; -------------------------------------------------------------------------
 
@@ -849,78 +646,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-value-constructor
     #'ElicitationSchemaType
     "ElicitationSchemaType"))
-
-;; -------------------------------------------------------------------------
-;; Notice
-;; -------------------------------------------------------------------------
-
-(def Notice
-  "Fire-and-forget information for the user. Notices are live events rather than session history. Agents must not rely on a notice being received, displayed, or seen by the user. Agents MUST only send notices when the Client advertised the `session.notices` Client capability. Otherwise, Agents may use an agent message when the information should still be surfaced to the user. See RFD: [Session Notices](https://agentclientprotocol.com/rfds/session-notices)"
-  [:map
-   {:closed false}
-   [:severity #'NoticeSeverity]
-   [:title [:string {:min 1}]]
-   [:description {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->Notice
-  "Create a `Notice` value."
-  (rt/make-object-constructor
-    #'Notice
-    "Notice"
-    [{:key :severity, :required? true, :nullable? false}
-     {:key :title, :required? true, :nullable? false}
-     {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; WaitForTerminalExitRequest
-;; -------------------------------------------------------------------------
-
-(def WaitForTerminalExitRequest
-  "Request to wait for a terminal command to exit."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:terminalId #'TerminalId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->WaitForTerminalExitRequest
-  "Create a `WaitForTerminalExitRequest` value."
-  (rt/make-object-constructor
-    #'WaitForTerminalExitRequest
-    "WaitForTerminalExitRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :terminalId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ClientSessionCapabilities
-;; -------------------------------------------------------------------------
-
-(def ClientSessionCapabilities
-  "Session-related capabilities supported by the client."
-  [:map
-   {:closed false}
-   [:compaction {:optional true} [:maybe #'CompactionCapabilities]]
-   [:configOptions
-    {:optional true}
-    [:maybe #'SessionConfigOptionsCapabilities]]
-   [:notices {:optional true} [:maybe #'NoticeCapabilities]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ClientSessionCapabilities
-  "Create a `ClientSessionCapabilities` value."
-  (rt/make-object-constructor
-    #'ClientSessionCapabilities
-    "ClientSessionCapabilities"
-    [{:key :compaction, :required? false, :nullable? true}
-     {:key :configOptions, :required? false, :nullable? true}
-     {:key :notices, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; AuthCapabilities
@@ -979,32 +704,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-value-constructor #'ExtRequest "ExtRequest"))
 
 ;; -------------------------------------------------------------------------
-;; LoadSessionRequest
-;; -------------------------------------------------------------------------
-
-(def LoadSessionRequest
-  "Request parameters for loading an existing session. Only available if the Agent supports the `loadSession` capability. See protocol docs: [Loading Sessions](https://agentclientprotocol.com/protocol/v1/session-setup#loading-sessions)"
-  [:map
-   {:closed false}
-   [:mcpServers [:vector #'McpServer]]
-   [:cwd :string]
-   [:additionalDirectories {:optional true} [:vector :string]]
-   [:sessionId #'SessionId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->LoadSessionRequest
-  "Create a `LoadSessionRequest` value."
-  (rt/make-object-constructor
-    #'LoadSessionRequest
-    "LoadSessionRequest"
-    [{:key :mcpServers, :required? true, :nullable? false}
-     {:key :cwd, :required? true, :nullable? false}
-     {:key :sessionId, :required? true, :nullable? false}
-     {:key :additionalDirectories, :required? false, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; AuthenticateRequest
 ;; -------------------------------------------------------------------------
 
@@ -1040,30 +739,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     #'LogoutRequest
     "LogoutRequest"
     [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; LoadSessionResponse
-;; -------------------------------------------------------------------------
-
-(def LoadSessionResponse
-  "Response from loading an existing session."
-  [:map
-   {:closed false}
-   [:modes {:optional true} [:maybe #'SessionModeState]]
-   [:configOptions
-    {:optional true}
-    [:maybe [:vector #'SessionConfigOption]]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->LoadSessionResponse
-  "Create a `LoadSessionResponse` value."
-  (rt/make-object-constructor
-    #'LoadSessionResponse
-    "LoadSessionResponse"
-    [{:key :modes, :required? false, :nullable? true}
-     {:key :configOptions, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -1114,86 +789,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; SessionAdditionalDirectoriesCapabilities
-;; -------------------------------------------------------------------------
-
-(def SessionAdditionalDirectoriesCapabilities
-  "Capabilities for additional session directories support. Supplying `{}` means the agent supports the `additionalDirectories` field on supported session lifecycle requests. Agents that also support `session/list` may return `SessionInfo.additionalDirectories` to report the complete ordered additional-root list associated with a listed session."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionAdditionalDirectoriesCapabilities
-  "Create a `SessionAdditionalDirectoriesCapabilities` value."
-  (rt/make-object-constructor
-    #'SessionAdditionalDirectoriesCapabilities
-    "SessionAdditionalDirectoriesCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ReleaseTerminalRequest
-;; -------------------------------------------------------------------------
-
-(def ReleaseTerminalRequest
-  "Request to release a terminal and free its resources."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:terminalId #'TerminalId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ReleaseTerminalRequest
-  "Create a `ReleaseTerminalRequest` value."
-  (rt/make-object-constructor
-    #'ReleaseTerminalRequest
-    "ReleaseTerminalRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :terminalId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionModeState
-;; -------------------------------------------------------------------------
-
-(def SessionModeState
-  "The set of modes and the one currently active."
-  [:map
-   {:closed false}
-   [:currentModeId #'SessionModeId]
-   [:availableModes [:vector #'SessionMode]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionModeState
-  "Create a `SessionModeState` value."
-  (rt/make-object-constructor
-    #'SessionModeState
-    "SessionModeState"
-    [{:key :currentModeId, :required? true, :nullable? false}
-     {:key :availableModes, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; KillTerminalResponse
-;; -------------------------------------------------------------------------
-
-(def KillTerminalResponse
-  "Response to `terminal/kill` method"
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->KillTerminalResponse
-  "Create a `KillTerminalResponse` value."
-  (rt/make-object-constructor
-    #'KillTerminalResponse
-    "KillTerminalResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; FileSystemCapabilities
 ;; -------------------------------------------------------------------------
 
@@ -1216,18 +811,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; StopReason
-;; -------------------------------------------------------------------------
-
-(def StopReason
-  "Reasons why an agent stops processing a prompt turn. See protocol docs: [Stop Reasons](https://agentclientprotocol.com/protocol/v1/prompt-turn#stop-reasons)"
-  [:enum "end_turn" "max_tokens" "max_turn_requests" "refusal" "cancelled"])
-
-(def ->StopReason
-  "Create a `StopReason` value."
-  (rt/make-value-constructor #'StopReason "StopReason"))
-
-;; -------------------------------------------------------------------------
 ;; ElicitationAcceptAction
 ;; -------------------------------------------------------------------------
 
@@ -1245,24 +828,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     #'ElicitationAcceptAction
     "ElicitationAcceptAction"
     [{:key :content, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionResumeCapabilities
-;; -------------------------------------------------------------------------
-
-(def SessionResumeCapabilities
-  "Capabilities for the `session/resume` method. Supplying `{}` means the agent supports resuming sessions."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionResumeCapabilities
-  "Create a `SessionResumeCapabilities` value."
-  (rt/make-object-constructor
-    #'SessionResumeCapabilities
-    "SessionResumeCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -1348,38 +913,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; NoticeSeverity
-;; -------------------------------------------------------------------------
-
-(def NoticeSeverity
-  "Severity hint for a session notice."
-  [:or [:= "info"] [:= "warning"] [:= "error"] :string])
-
-(def ->NoticeSeverity
-  "Create a `NoticeSeverity` value."
-  (rt/make-value-constructor #'NoticeSeverity "NoticeSeverity"))
-
-;; -------------------------------------------------------------------------
-;; CancelNotification
-;; -------------------------------------------------------------------------
-
-(def CancelNotification
-  "Notification to cancel ongoing operations for a session. See protocol docs: [Cancellation](https://agentclientprotocol.com/protocol/v1/prompt-turn#cancellation)"
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CancelNotification
-  "Create a `CancelNotification` value."
-  (rt/make-object-constructor
-    #'CancelNotification
-    "CancelNotification"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ExtResponse
 ;; -------------------------------------------------------------------------
 
@@ -1390,33 +923,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def ->ExtResponse
   "Create a `ExtResponse` value."
   (rt/make-value-constructor #'ExtResponse "ExtResponse"))
-
-;; -------------------------------------------------------------------------
-;; McpServer
-;; -------------------------------------------------------------------------
-
-(def McpServer
-  "Configuration for connecting to an MCP (Model Context Protocol) server. MCP servers provide tools and context that the agent can use when processing prompts. See protocol docs: [MCP Servers](https://agentclientprotocol.com/protocol/v1/session-setup#mcp-servers)"
-  [:or
-   [:and [:map {:closed false} [:type [:= "http"]]] #'McpServerHttp]
-   [:and [:map {:closed false} [:type [:= "sse"]]] #'McpServerSse]
-   #'McpServerStdio])
-
-(def ->McpServer
-  "Create a `McpServer` value."
-  (rt/make-value-constructor #'McpServer "McpServer"))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigId
-;; -------------------------------------------------------------------------
-
-(def SessionConfigId
-  "Unique identifier for a session configuration option."
-  :string)
-
-(def ->SessionConfigId
-  "Create a `SessionConfigId` value."
-  (rt/make-value-constructor #'SessionConfigId "SessionConfigId"))
 
 ;; -------------------------------------------------------------------------
 ;; EnumOption
@@ -1439,188 +945,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     [{:key :const, :required? true, :nullable? false}
      {:key :title, :required? true, :nullable? false}
      {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; McpServerStdio
-;; -------------------------------------------------------------------------
-
-(def McpServerStdio
-  "Stdio transport configuration for MCP."
-  [:map
-   {:closed false}
-   [:name :string]
-   [:command :string]
-   [:args [:vector :string]]
-   [:env [:vector #'EnvVariable]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->McpServerStdio
-  "Create a `McpServerStdio` value."
-  (rt/make-object-constructor
-    #'McpServerStdio
-    "McpServerStdio"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :command, :required? true, :nullable? false}
-     {:key :args, :required? true, :nullable? false}
-     {:key :env, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ToolCallLocation
-;; -------------------------------------------------------------------------
-
-(def ToolCallLocation
-  "A file location being accessed or modified by a tool. Enables clients to implement \"follow-along\" features that track which files the agent is working with in real-time. See protocol docs: [Following the Agent](https://agentclientprotocol.com/protocol/v1/tool-calls#following-the-agent)"
-  [:map
-   {:closed false}
-   [:path :string]
-   [:line {:optional true} [:maybe [:int {:min 0}]]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ToolCallLocation
-  "Create a `ToolCallLocation` value."
-  (rt/make-object-constructor
-    #'ToolCallLocation
-    "ToolCallLocation"
-    [{:key :path, :required? true, :nullable? false}
-     {:key :line, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigGroupId
-;; -------------------------------------------------------------------------
-
-(def SessionConfigGroupId
-  "Unique identifier for a session configuration option value group."
-  :string)
-
-(def ->SessionConfigGroupId
-  "Create a `SessionConfigGroupId` value."
-  (rt/make-value-constructor #'SessionConfigGroupId "SessionConfigGroupId"))
-
-;; -------------------------------------------------------------------------
-;; PermissionOption
-;; -------------------------------------------------------------------------
-
-(def PermissionOption
-  "An option presented to the user when requesting permission."
-  [:map
-   {:closed false}
-   [:optionId #'PermissionOptionId]
-   [:name :string]
-   [:kind #'PermissionOptionKind]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->PermissionOption
-  "Create a `PermissionOption` value."
-  (rt/make-object-constructor
-    #'PermissionOption
-    "PermissionOption"
-    [{:key :optionId, :required? true, :nullable? false}
-     {:key :name, :required? true, :nullable? false}
-     {:key :kind, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SetSessionConfigOptionResponse
-;; -------------------------------------------------------------------------
-
-(def SetSessionConfigOptionResponse
-  "Response to `session/set_config_option` method."
-  [:map
-   {:closed false}
-   [:configOptions [:vector #'SessionConfigOption]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SetSessionConfigOptionResponse
-  "Create a `SetSessionConfigOptionResponse` value."
-  (rt/make-object-constructor
-    #'SetSessionConfigOptionResponse
-    "SetSessionConfigOptionResponse"
-    [{:key :configOptions, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SelectedPermissionOutcome
-;; -------------------------------------------------------------------------
-
-(def SelectedPermissionOutcome
-  "The user selected one of the provided options."
-  [:map
-   {:closed false}
-   [:optionId #'PermissionOptionId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SelectedPermissionOutcome
-  "Create a `SelectedPermissionOutcome` value."
-  (rt/make-object-constructor
-    #'SelectedPermissionOutcome
-    "SelectedPermissionOutcome"
-    [{:key :optionId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigValueId
-;; -------------------------------------------------------------------------
-
-(def SessionConfigValueId
-  "Unique identifier for a session configuration option value."
-  :string)
-
-(def ->SessionConfigValueId
-  "Create a `SessionConfigValueId` value."
-  (rt/make-value-constructor #'SessionConfigValueId "SessionConfigValueId"))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigSelectOption
-;; -------------------------------------------------------------------------
-
-(def SessionConfigSelectOption
-  "A possible value for a session configuration option."
-  [:map
-   {:closed false}
-   [:value #'SessionConfigValueId]
-   [:name :string]
-   [:description {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionConfigSelectOption
-  "Create a `SessionConfigSelectOption` value."
-  (rt/make-object-constructor
-    #'SessionConfigSelectOption
-    "SessionConfigSelectOption"
-    [{:key :value, :required? true, :nullable? false}
-     {:key :name, :required? true, :nullable? false}
-     {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ContentChunk
-;; -------------------------------------------------------------------------
-
-(def ContentChunk
-  "A streamed item of content"
-  [:map
-   {:closed false}
-   [:content #'ContentBlock]
-   [:messageId {:optional true} [:maybe #'MessageId]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ContentChunk
-  "Create a `ContentChunk` value."
-  (rt/make-object-constructor
-    #'ContentChunk
-    "ContentChunk"
-    [{:key :content, :required? true, :nullable? false}
-     {:key :messageId, :required? false, :nullable? true}
      {:key :_meta, :required? false, :nullable? true}]
     false))
 
@@ -1690,28 +1014,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
      {:key :minItems, :required? false, :nullable? true}
      {:key :maxItems, :required? false, :nullable? true}
      {:key :default, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; WaitForTerminalExitResponse
-;; -------------------------------------------------------------------------
-
-(def WaitForTerminalExitResponse
-  "Response containing the exit status of a terminal command."
-  [:map
-   {:closed false}
-   [:exitCode {:optional true} [:maybe [:int {:min 0}]]]
-   [:signal {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->WaitForTerminalExitResponse
-  "Create a `WaitForTerminalExitResponse` value."
-  (rt/make-object-constructor
-    #'WaitForTerminalExitResponse
-    "WaitForTerminalExitResponse"
-    [{:key :exitCode, :required? false, :nullable? true}
-     {:key :signal, :required? false, :nullable? true}
      {:key :_meta, :required? false, :nullable? true}]
     false))
 
@@ -1805,18 +1107,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; ToolCallStatus
-;; -------------------------------------------------------------------------
-
-(def ToolCallStatus
-  "Execution status of a tool call. Tool calls progress through different statuses during their lifecycle. See protocol docs: [Status](https://agentclientprotocol.com/protocol/v1/tool-calls#status)"
-  [:enum "pending" "in_progress" "completed" "failed"])
-
-(def ->ToolCallStatus
-  "Create a `ToolCallStatus` value."
-  (rt/make-value-constructor #'ToolCallStatus "ToolCallStatus"))
-
-;; -------------------------------------------------------------------------
 ;; StringMultiSelectItems
 ;; -------------------------------------------------------------------------
 
@@ -1863,56 +1153,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
      {:key :properties, :required? false, :nullable? false}
      {:key :required, :required? false, :nullable? true}
      {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; AvailableCommandInput
-;; -------------------------------------------------------------------------
-
-(def AvailableCommandInput
-  "The input specification for a command."
-  #'UnstructuredCommandInput)
-
-(def ->AvailableCommandInput
-  "Create a `AvailableCommandInput` value."
-  (rt/make-value-constructor
-    #'AvailableCommandInput
-    "AvailableCommandInput"))
-
-;; -------------------------------------------------------------------------
-;; PlanEntryStatus
-;; -------------------------------------------------------------------------
-
-(def PlanEntryStatus
-  "Status of a plan entry in the execution flow. Tracks the lifecycle of each task from planning through completion. See protocol docs: [Plan Entries](https://agentclientprotocol.com/protocol/v1/agent-plan#plan-entries)"
-  [:enum "pending" "in_progress" "completed"])
-
-(def ->PlanEntryStatus
-  "Create a `PlanEntryStatus` value."
-  (rt/make-value-constructor #'PlanEntryStatus "PlanEntryStatus"))
-
-;; -------------------------------------------------------------------------
-;; UsageUpdate
-;; -------------------------------------------------------------------------
-
-(def UsageUpdate
-  "Context window and cost update for a session."
-  [:map
-   {:closed false}
-   [:used [:int {:min 0}]]
-   [:size [:int {:min 0}]]
-   [:cost {:optional true} [:maybe #'Cost]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->UsageUpdate
-  "Create a `UsageUpdate` value."
-  (rt/make-object-constructor
-    #'UsageUpdate
-    "UsageUpdate"
-    [{:key :used, :required? true, :nullable? false}
-     {:key :size, :required? true, :nullable? false}
-     {:key :cost, :required? false, :nullable? true}
      {:key :_meta, :required? false, :nullable? true}]
     false))
 
@@ -1990,26 +1230,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     true))
 
 ;; -------------------------------------------------------------------------
-;; PromptResponse
-;; -------------------------------------------------------------------------
-
-(def PromptResponse
-  "Response from processing a user prompt. See protocol docs: [Check for Completion](https://agentclientprotocol.com/protocol/v1/prompt-turn#4-check-for-completion)"
-  [:map
-   {:closed false}
-   [:stopReason #'StopReason]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->PromptResponse
-  "Create a `PromptResponse` value."
-  (rt/make-object-constructor
-    #'PromptResponse
-    "PromptResponse"
-    [{:key :stopReason, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; CompleteElicitationNotification
 ;; -------------------------------------------------------------------------
 
@@ -2030,62 +1250,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; ToolCall
-;; -------------------------------------------------------------------------
-
-(def ToolCall
-  "Represents a tool call that the language model has requested. Tool calls are actions that the agent executes on behalf of the language model, such as reading files, executing code, or fetching data from external sources. See protocol docs: [Tool Calls](https://agentclientprotocol.com/protocol/v1/tool-calls)"
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]
-   [:content {:optional true} [:vector #'ToolCallContent]]
-   [:name {:optional true} [:maybe :string]]
-   [:toolCallId #'ToolCallId]
-   [:title :string]
-   [:locations {:optional true} [:vector #'ToolCallLocation]]
-   [:rawOutput {:optional true} :any]
-   [:status {:optional true} #'ToolCallStatus]
-   [:kind {:optional true} #'ToolKind]
-   [:rawInput {:optional true} :any]])
-
-(def ->ToolCall
-  "Create a `ToolCall` value."
-  (rt/make-object-constructor
-    #'ToolCall
-    "ToolCall"
-    [{:key :toolCallId, :required? true, :nullable? false}
-     {:key :title, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}
-     {:key :content, :required? false, :nullable? false}
-     {:key :name, :required? false, :nullable? true}
-     {:key :locations, :required? false, :nullable? false}
-     {:key :rawOutput, :required? false, :nullable? false}
-     {:key :status, :required? false, :nullable? false}
-     {:key :kind, :required? false, :nullable? false}
-     {:key :rawInput, :required? false, :nullable? false}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; Plan
-;; -------------------------------------------------------------------------
-
-(def Plan
-  "An execution plan for accomplishing complex tasks. Plans consist of multiple entries representing individual tasks or goals. Agents report plans to clients to provide visibility into their execution strategy. Plans can evolve during execution as the agent discovers new requirements or completes tasks. See protocol docs: [Agent Plan](https://agentclientprotocol.com/protocol/v1/agent-plan)"
-  [:map
-   {:closed false}
-   [:entries [:vector #'PlanEntry]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->Plan
-  "Create a `Plan` value."
-  (rt/make-object-constructor
-    #'Plan
-    "Plan"
-    [{:key :entries, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ProtocolVersion
 ;; -------------------------------------------------------------------------
 
@@ -2096,50 +1260,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def ->ProtocolVersion
   "Create a `ProtocolVersion` value."
   (rt/make-value-constructor #'ProtocolVersion "ProtocolVersion"))
-
-;; -------------------------------------------------------------------------
-;; SessionMode
-;; -------------------------------------------------------------------------
-
-(def SessionMode
-  "A mode the agent can operate in. See protocol docs: [Session Modes](https://agentclientprotocol.com/protocol/v1/session-modes)"
-  [:map
-   {:closed false}
-   [:id #'SessionModeId]
-   [:name :string]
-   [:description {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionMode
-  "Create a `SessionMode` value."
-  (rt/make-object-constructor
-    #'SessionMode
-    "SessionMode"
-    [{:key :id, :required? true, :nullable? false}
-     {:key :name, :required? true, :nullable? false}
-     {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; AvailableCommandsUpdate
-;; -------------------------------------------------------------------------
-
-(def AvailableCommandsUpdate
-  "Available commands are ready or have changed"
-  [:map
-   {:closed false}
-   [:availableCommands [:vector #'AvailableCommand]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->AvailableCommandsUpdate
-  "Create a `AvailableCommandsUpdate` value."
-  (rt/make-object-constructor
-    #'AvailableCommandsUpdate
-    "AvailableCommandsUpdate"
-    [{:key :availableCommands, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; ElicitationUrlCapabilities
@@ -2156,66 +1276,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-object-constructor
     #'ElicitationUrlCapabilities
     "ElicitationUrlCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; EnvVariable
-;; -------------------------------------------------------------------------
-
-(def EnvVariable
-  "An environment variable to set when launching an MCP server."
-  [:map
-   {:closed false}
-   [:name :string]
-   [:value :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->EnvVariable
-  "Create a `EnvVariable` value."
-  (rt/make-object-constructor
-    #'EnvVariable
-    "EnvVariable"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :value, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; CreateTerminalResponse
-;; -------------------------------------------------------------------------
-
-(def CreateTerminalResponse
-  "Response containing the ID of the created terminal."
-  [:map
-   {:closed false}
-   [:terminalId #'TerminalId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CreateTerminalResponse
-  "Create a `CreateTerminalResponse` value."
-  (rt/make-object-constructor
-    #'CreateTerminalResponse
-    "CreateTerminalResponse"
-    [{:key :terminalId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SetSessionModeResponse
-;; -------------------------------------------------------------------------
-
-(def SetSessionModeResponse
-  "Response to `session/set_mode` method."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SetSessionModeResponse
-  "Create a `SetSessionModeResponse` value."
-  (rt/make-object-constructor
-    #'SetSessionModeResponse
-    "SetSessionModeResponse"
     [{:key :_meta, :required? false, :nullable? true}]
     false))
 
@@ -2296,22 +1356,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; CompactionCapabilities
-;; -------------------------------------------------------------------------
-
-(def CompactionCapabilities
-  "Client support for ID-addressed context compaction updates."
-  [:map {:closed false}])
-
-(def ->CompactionCapabilities
-  "Create a `CompactionCapabilities` value."
-  (rt/make-object-constructor
-    #'CompactionCapabilities
-    "CompactionCapabilities"
-    []
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ElicitationRequestScope
 ;; -------------------------------------------------------------------------
 
@@ -2325,160 +1369,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     #'ElicitationRequestScope
     "ElicitationRequestScope"
     [{:key :requestId, :required? true, :nullable? false}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigSelect
-;; -------------------------------------------------------------------------
-
-(def SessionConfigSelect
-  "A single-value selector (dropdown) session configuration option payload."
-  [:map
-   {:closed false}
-   [:currentValue #'SessionConfigValueId]
-   [:options #'SessionConfigSelectOptions]])
-
-(def ->SessionConfigSelect
-  "Create a `SessionConfigSelect` value."
-  (rt/make-object-constructor
-    #'SessionConfigSelect
-    "SessionConfigSelect"
-    [{:key :currentValue, :required? true, :nullable? false}
-     {:key :options, :required? true, :nullable? false}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; UnstructuredCommandInput
-;; -------------------------------------------------------------------------
-
-(def UnstructuredCommandInput
-  "All text that was typed after the command name is provided as input."
-  [:map
-   {:closed false}
-   [:hint :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->UnstructuredCommandInput
-  "Create a `UnstructuredCommandInput` value."
-  (rt/make-object-constructor
-    #'UnstructuredCommandInput
-    "UnstructuredCommandInput"
-    [{:key :hint, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigSelectGroup
-;; -------------------------------------------------------------------------
-
-(def SessionConfigSelectGroup
-  "A group of possible values for a session configuration option."
-  [:map
-   {:closed false}
-   [:group #'SessionConfigGroupId]
-   [:name :string]
-   [:options [:vector #'SessionConfigSelectOption]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionConfigSelectGroup
-  "Create a `SessionConfigSelectGroup` value."
-  (rt/make-object-constructor
-    #'SessionConfigSelectGroup
-    "SessionConfigSelectGroup"
-    [{:key :group, :required? true, :nullable? false}
-     {:key :name, :required? true, :nullable? false}
-     {:key :options, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; NewSessionResponse
-;; -------------------------------------------------------------------------
-
-(def NewSessionResponse
-  "Response from creating a new session. See protocol docs: [Creating a Session](https://agentclientprotocol.com/protocol/v1/session-setup#creating-a-session)"
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:modes {:optional true} [:maybe #'SessionModeState]]
-   [:configOptions
-    {:optional true}
-    [:maybe [:vector #'SessionConfigOption]]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->NewSessionResponse
-  "Create a `NewSessionResponse` value."
-  (rt/make-object-constructor
-    #'NewSessionResponse
-    "NewSessionResponse"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :modes, :required? false, :nullable? true}
-     {:key :configOptions, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; CreateTerminalRequest
-;; -------------------------------------------------------------------------
-
-(def CreateTerminalRequest
-  "Request to create a new terminal and execute a command."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:command :string]
-   [:args {:optional true} [:vector :string]]
-   [:env {:optional true} [:vector #'EnvVariable]]
-   [:cwd {:optional true} [:maybe :string]]
-   [:outputByteLimit {:optional true} [:maybe [:int {:min 0}]]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CreateTerminalRequest
-  "Create a `CreateTerminalRequest` value."
-  (rt/make-object-constructor
-    #'CreateTerminalRequest
-    "CreateTerminalRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :command, :required? true, :nullable? false}
-     {:key :args, :required? false, :nullable? false}
-     {:key :env, :required? false, :nullable? false}
-     {:key :cwd, :required? false, :nullable? true}
-     {:key :outputByteLimit, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; PermissionOptionKind
-;; -------------------------------------------------------------------------
-
-(def PermissionOptionKind
-  "The type of permission option being presented to the user. Helps clients choose appropriate icons and UI treatment."
-  [:enum "allow_once" "allow_always" "reject_once" "reject_always"])
-
-(def ->PermissionOptionKind
-  "Create a `PermissionOptionKind` value."
-  (rt/make-value-constructor #'PermissionOptionKind "PermissionOptionKind"))
-
-;; -------------------------------------------------------------------------
-;; SessionNotification
-;; -------------------------------------------------------------------------
-
-(def SessionNotification
-  "Notification containing a session update from the agent. Used to stream real-time progress and results during prompt processing. See protocol docs: [Agent Reports Output](https://agentclientprotocol.com/protocol/v1/prompt-turn#3-agent-reports-output)"
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:update #'SessionUpdate]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionNotification
-  "Create a `SessionNotification` value."
-  (rt/make-object-constructor
-    #'SessionNotification
-    "SessionNotification"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :update, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -2562,40 +1452,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
   (rt/make-value-constructor #'ElicitationId "ElicitationId"))
 
 ;; -------------------------------------------------------------------------
-;; CompactionId
-;; -------------------------------------------------------------------------
-
-(def CompactionId
-  "Unique identifier for a context compaction within a session."
-  :string)
-
-(def ->CompactionId
-  "Create a `CompactionId` value."
-  (rt/make-value-constructor #'CompactionId "CompactionId"))
-
-;; -------------------------------------------------------------------------
-;; CompactionSummaryChunk
-;; -------------------------------------------------------------------------
-
-(def CompactionSummaryChunk
-  "A content block appended to a compaction's summary. A first-seen ID creates an in-progress compaction. Chunks append in receive order. Agents MUST only send this update when the Client advertised the `session.compaction` Client capability."
-  [:map
-   {:closed false}
-   [:compactionId #'CompactionId]
-   [:content #'ContentBlock]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CompactionSummaryChunk
-  "Create a `CompactionSummaryChunk` value."
-  (rt/make-object-constructor
-    #'CompactionSummaryChunk
-    "CompactionSummaryChunk"
-    [{:key :compactionId, :required? true, :nullable? false}
-     {:key :content, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; MultiSelectItems
 ;; -------------------------------------------------------------------------
 
@@ -2613,30 +1469,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def ->MultiSelectItems
   "Create a `MultiSelectItems` value."
   (rt/make-value-constructor #'MultiSelectItems "MultiSelectItems"))
-
-;; -------------------------------------------------------------------------
-;; NewSessionRequest
-;; -------------------------------------------------------------------------
-
-(def NewSessionRequest
-  "Request parameters for creating a new session. See protocol docs: [Creating a Session](https://agentclientprotocol.com/protocol/v1/session-setup#creating-a-session)"
-  [:map
-   {:closed false}
-   [:cwd :string]
-   [:additionalDirectories {:optional true} [:vector :string]]
-   [:mcpServers [:vector #'McpServer]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->NewSessionRequest
-  "Create a `NewSessionRequest` value."
-  (rt/make-object-constructor
-    #'NewSessionRequest
-    "NewSessionRequest"
-    [{:key :cwd, :required? true, :nullable? false}
-     {:key :mcpServers, :required? true, :nullable? false}
-     {:key :additionalDirectories, :required? false, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; AgentNotification
@@ -2665,96 +1497,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; NoticeCapabilities
-;; -------------------------------------------------------------------------
-
-(def NoticeCapabilities
-  "Client support for presenting live notices to the user."
-  [:map {:closed false}])
-
-(def ->NoticeCapabilities
-  "Create a `NoticeCapabilities` value."
-  (rt/make-object-constructor
-    #'NoticeCapabilities
-    "NoticeCapabilities"
-    []
-    false))
-
-;; -------------------------------------------------------------------------
-;; RequestPermissionRequest
-;; -------------------------------------------------------------------------
-
-(def RequestPermissionRequest
-  "Request for user permission to execute a tool call. Sent when the agent needs authorization before performing a sensitive operation. See protocol docs: [Requesting Permission](https://agentclientprotocol.com/protocol/v1/tool-calls#requesting-permission)"
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:toolCall #'ToolCallUpdate]
-   [:options [:vector #'PermissionOption]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->RequestPermissionRequest
-  "Create a `RequestPermissionRequest` value."
-  (rt/make-object-constructor
-    #'RequestPermissionRequest
-    "RequestPermissionRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :toolCall, :required? true, :nullable? false}
-     {:key :options, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionUpdate
-;; -------------------------------------------------------------------------
-
-(def SessionUpdate
-  "Different types of updates that can be sent during session processing. These updates provide real-time feedback about the agent's progress. See protocol docs: [Agent Reports Output](https://agentclientprotocol.com/protocol/v1/prompt-turn#3-agent-reports-output)"
-  [:or
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "user_message_chunk"]]]
-    #'ContentChunk]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "agent_message_chunk"]]]
-    #'ContentChunk]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "agent_thought_chunk"]]]
-    #'ContentChunk]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "tool_call"]]]
-    #'ToolCall]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "tool_call_update"]]]
-    #'ToolCallUpdate]
-   [:and [:map {:closed false} [:sessionUpdate [:= "plan"]]] #'Plan]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "available_commands_update"]]]
-    #'AvailableCommandsUpdate]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "current_mode_update"]]]
-    #'CurrentModeUpdate]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "config_option_update"]]]
-    #'ConfigOptionUpdate]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "session_info_update"]]]
-    #'SessionInfoUpdate]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "usage_update"]]]
-    #'UsageUpdate]
-   [:and [:map {:closed false} [:sessionUpdate [:= "notice"]]] #'Notice]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "compaction_update"]]]
-    #'CompactionUpdate]
-   [:and
-    [:map {:closed false} [:sessionUpdate [:= "compaction_summary_chunk"]]]
-    #'CompactionSummaryChunk]])
-
-(def ->SessionUpdate
-  "Create a `SessionUpdate` value."
-  (rt/make-value-constructor #'SessionUpdate "SessionUpdate"))
-
-;; -------------------------------------------------------------------------
 ;; TitledMultiSelectItems
 ;; -------------------------------------------------------------------------
 
@@ -2772,86 +1514,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     "TitledMultiSelectItems"
     [{:key :anyOf, :required? true, :nullable? false}
      {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ResumeSessionResponse
-;; -------------------------------------------------------------------------
-
-(def ResumeSessionResponse
-  "Response from resuming an existing session."
-  [:map
-   {:closed false}
-   [:modes {:optional true} [:maybe #'SessionModeState]]
-   [:configOptions
-    {:optional true}
-    [:maybe [:vector #'SessionConfigOption]]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ResumeSessionResponse
-  "Create a `ResumeSessionResponse` value."
-  (rt/make-object-constructor
-    #'ResumeSessionResponse
-    "ResumeSessionResponse"
-    [{:key :modes, :required? false, :nullable? true}
-     {:key :configOptions, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; Cost
-;; -------------------------------------------------------------------------
-
-(def Cost
-  "Cost information for a session."
-  [:map
-   {:closed false}
-   [:amount number?]
-   [:currency :string]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->Cost
-  "Create a `Cost` value."
-  (rt/make-object-constructor
-    #'Cost
-    "Cost"
-    [{:key :amount, :required? true, :nullable? false}
-     {:key :currency, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigSelectOptions
-;; -------------------------------------------------------------------------
-
-(def SessionConfigSelectOptions
-  "Possible values for a session configuration option."
-  [:or
-   [:vector #'SessionConfigSelectOption]
-   [:vector #'SessionConfigSelectGroup]])
-
-(def ->SessionConfigSelectOptions
-  "Create a `SessionConfigSelectOptions` value."
-  (rt/make-value-constructor
-    #'SessionConfigSelectOptions
-    "SessionConfigSelectOptions"))
-
-;; -------------------------------------------------------------------------
-;; SessionDeleteCapabilities
-;; -------------------------------------------------------------------------
-
-(def SessionDeleteCapabilities
-  "Capabilities for the `session/delete` method. Supplying `{}` means the agent supports deleting sessions from `session/list`."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionDeleteCapabilities
-  "Create a `SessionDeleteCapabilities` value."
-  (rt/make-object-constructor
-    #'SessionDeleteCapabilities
-    "SessionDeleteCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -2877,46 +1539,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; TerminalOutputRequest
-;; -------------------------------------------------------------------------
-
-(def TerminalOutputRequest
-  "Request to get the current output and status of a terminal."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:terminalId #'TerminalId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->TerminalOutputRequest
-  "Create a `TerminalOutputRequest` value."
-  (rt/make-object-constructor
-    #'TerminalOutputRequest
-    "TerminalOutputRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :terminalId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionListCapabilities
-;; -------------------------------------------------------------------------
-
-(def SessionListCapabilities
-  "Capabilities for the `session/list` method. Supplying `{}` means the agent supports listing sessions."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionListCapabilities
-  "Create a `SessionListCapabilities` value."
-  (rt/make-object-constructor
-    #'SessionListCapabilities
-    "SessionListCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; Error
 ;; -------------------------------------------------------------------------
 
@@ -2939,26 +1561,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     false))
 
 ;; -------------------------------------------------------------------------
-;; DeleteSessionRequest
-;; -------------------------------------------------------------------------
-
-(def DeleteSessionRequest
-  "Request parameters for deleting an existing session from `session/list`. Only available if the Agent supports the `sessionCapabilities.delete` capability."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->DeleteSessionRequest
-  "Create a `DeleteSessionRequest` value."
-  (rt/make-object-constructor
-    #'DeleteSessionRequest
-    "DeleteSessionRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ElicitationSessionScope
 ;; -------------------------------------------------------------------------
 
@@ -2976,44 +1578,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     "ElicitationSessionScope"
     [{:key :sessionId, :required? true, :nullable? false}
      {:key :toolCallId, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ReleaseTerminalResponse
-;; -------------------------------------------------------------------------
-
-(def ReleaseTerminalResponse
-  "Response to terminal/release method"
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ReleaseTerminalResponse
-  "Create a `ReleaseTerminalResponse` value."
-  (rt/make-object-constructor
-    #'ReleaseTerminalResponse
-    "ReleaseTerminalResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; RequestPermissionResponse
-;; -------------------------------------------------------------------------
-
-(def RequestPermissionResponse
-  "Response to a permission request."
-  [:map
-   {:closed false}
-   [:outcome #'RequestPermissionOutcome]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->RequestPermissionResponse
-  "Create a `RequestPermissionResponse` value."
-  (rt/make-object-constructor
-    #'RequestPermissionResponse
-    "RequestPermissionResponse"
-    [{:key :outcome, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -3038,155 +1602,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
      {:key :audio, :required? false, :nullable? false}
      {:key :embeddedContext, :required? false, :nullable? false}
      {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionConfigBoolean
-;; -------------------------------------------------------------------------
-
-(def SessionConfigBoolean
-  "A boolean on/off toggle session configuration option payload."
-  [:map {:closed false} [:currentValue :boolean]])
-
-(def ->SessionConfigBoolean
-  "Create a `SessionConfigBoolean` value."
-  (rt/make-object-constructor
-    #'SessionConfigBoolean
-    "SessionConfigBoolean"
-    [{:key :currentValue, :required? true, :nullable? false}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; CompactionUpdate
-;; -------------------------------------------------------------------------
-
-(def CompactionUpdate
-  "A context compaction upsert. The first notification fixes the compaction's timeline position. Later updates with the same ID patch that entity in place. Agents MUST only send this update when the Client advertised the `session.compaction` Client capability. `summary`, `error`, and `_meta` have patch semantics: omission leaves the stored value unchanged, `null` clears it, and a concrete value replaces it. `summary: []` also clears the summary."
-  [:map
-   {:closed false}
-   [:compactionId #'CompactionId]
-   [:status #'CompactionStatus]
-   [:summary {:optional true} [:maybe [:vector #'ContentBlock]]]
-   [:error {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CompactionUpdate
-  "Create a `CompactionUpdate` value."
-  (rt/make-object-constructor
-    #'CompactionUpdate
-    "CompactionUpdate"
-    [{:key :compactionId, :required? true, :nullable? false}
-     {:key :status, :required? true, :nullable? false}
-     {:key :summary, :required? false, :nullable? true}
-     {:key :error, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; CloseSessionResponse
-;; -------------------------------------------------------------------------
-
-(def CloseSessionResponse
-  "Response from closing a session."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->CloseSessionResponse
-  "Create a `CloseSessionResponse` value."
-  (rt/make-object-constructor
-    #'CloseSessionResponse
-    "CloseSessionResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ToolCallId
-;; -------------------------------------------------------------------------
-
-(def ToolCallId
-  "Unique identifier for a tool call within a session."
-  :string)
-
-(def ->ToolCallId
-  "Create a `ToolCallId` value."
-  (rt/make-value-constructor #'ToolCallId "ToolCallId"))
-
-;; -------------------------------------------------------------------------
-;; SessionModeId
-;; -------------------------------------------------------------------------
-
-(def SessionModeId
-  "Unique identifier for a Session Mode."
-  :string)
-
-(def ->SessionModeId
-  "Create a `SessionModeId` value."
-  (rt/make-value-constructor #'SessionModeId "SessionModeId"))
-
-;; -------------------------------------------------------------------------
-;; PlanEntryPriority
-;; -------------------------------------------------------------------------
-
-(def PlanEntryPriority
-  "Priority levels for plan entries. Used to indicate the relative importance or urgency of different tasks in the execution plan. See protocol docs: [Plan Entries](https://agentclientprotocol.com/protocol/v1/agent-plan#plan-entries)"
-  [:enum "high" "medium" "low"])
-
-(def ->PlanEntryPriority
-  "Create a `PlanEntryPriority` value."
-  (rt/make-value-constructor #'PlanEntryPriority "PlanEntryPriority"))
-
-;; -------------------------------------------------------------------------
-;; CompactionStatus
-;; -------------------------------------------------------------------------
-
-(def CompactionStatus
-  "Lifecycle state of a context compaction."
-  [:or
-   [:= "in_progress"]
-   [:= "completed"]
-   [:= "failed"]
-   [:= "cancelled"]
-   :string])
-
-(def ->CompactionStatus
-  "Create a `CompactionStatus` value."
-  (rt/make-value-constructor #'CompactionStatus "CompactionStatus"))
-
-;; -------------------------------------------------------------------------
-;; DeleteSessionResponse
-;; -------------------------------------------------------------------------
-
-(def DeleteSessionResponse
-  "Response from deleting a session."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->DeleteSessionResponse
-  "Create a `DeleteSessionResponse` value."
-  (rt/make-object-constructor
-    #'DeleteSessionResponse
-    "DeleteSessionResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionCloseCapabilities
-;; -------------------------------------------------------------------------
-
-(def SessionCloseCapabilities
-  "Capabilities for the `session/close` method. Supplying `{}` means the agent supports closing sessions."
-  [:map
-   {:closed false}
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionCloseCapabilities
-  "Create a `SessionCloseCapabilities` value."
-  (rt/make-object-constructor
-    #'SessionCloseCapabilities
-    "SessionCloseCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -3242,136 +1657,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
 (def ->ClientResponse
   "Create a `ClientResponse` value."
   (rt/make-value-constructor #'ClientResponse "ClientResponse"))
-
-;; -------------------------------------------------------------------------
-;; SessionInfo
-;; -------------------------------------------------------------------------
-
-(def SessionInfo
-  "Information about a session returned by session/list"
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:cwd :string]
-   [:additionalDirectories {:optional true} [:vector :string]]
-   [:title {:optional true} [:maybe :string]]
-   [:updatedAt {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionInfo
-  "Create a `SessionInfo` value."
-  (rt/make-object-constructor
-    #'SessionInfo
-    "SessionInfo"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :cwd, :required? true, :nullable? false}
-     {:key :additionalDirectories, :required? false, :nullable? false}
-     {:key :title, :required? false, :nullable? true}
-     {:key :updatedAt, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; ResumeSessionRequest
-;; -------------------------------------------------------------------------
-
-(def ResumeSessionRequest
-  "Request parameters for resuming an existing session. Resumes an existing session without returning previous messages (unlike `session/load`). This is useful for agents that can resume sessions but don't implement full session loading. Only available if the Agent supports the `sessionCapabilities.resume` capability."
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:cwd :string]
-   [:additionalDirectories {:optional true} [:vector :string]]
-   [:mcpServers {:optional true} [:vector #'McpServer]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->ResumeSessionRequest
-  "Create a `ResumeSessionRequest` value."
-  (rt/make-object-constructor
-    #'ResumeSessionRequest
-    "ResumeSessionRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :cwd, :required? true, :nullable? false}
-     {:key :additionalDirectories, :required? false, :nullable? false}
-     {:key :mcpServers, :required? false, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; PlanEntry
-;; -------------------------------------------------------------------------
-
-(def PlanEntry
-  "A single entry in the execution plan. Represents a task or goal that the assistant intends to accomplish as part of fulfilling the user's request. See protocol docs: [Plan Entries](https://agentclientprotocol.com/protocol/v1/agent-plan#plan-entries)"
-  [:map
-   {:closed false}
-   [:content :string]
-   [:priority #'PlanEntryPriority]
-   [:status #'PlanEntryStatus]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->PlanEntry
-  "Create a `PlanEntry` value."
-  (rt/make-object-constructor
-    #'PlanEntry
-    "PlanEntry"
-    [{:key :content, :required? true, :nullable? false}
-     {:key :priority, :required? true, :nullable? false}
-     {:key :status, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionCapabilities
-;; -------------------------------------------------------------------------
-
-(def SessionCapabilities
-  "Session capabilities supported by the agent. As a baseline, all Agents **MUST** support `session/new`, `session/prompt`, `session/cancel`, and `session/update`. Optionally, they **MAY** support other session methods and notifications by specifying additional capabilities. Note: `session/load` is still handled by the top-level `loadSession` capability. This will be unified in future versions of the protocol. See protocol docs: [Session Capabilities](https://agentclientprotocol.com/protocol/v1/initialization#session-capabilities)"
-  [:map
-   {:closed false}
-   [:list {:optional true} [:maybe #'SessionListCapabilities]]
-   [:delete {:optional true} [:maybe #'SessionDeleteCapabilities]]
-   [:additionalDirectories
-    {:optional true}
-    [:maybe #'SessionAdditionalDirectoriesCapabilities]]
-   [:resume {:optional true} [:maybe #'SessionResumeCapabilities]]
-   [:close {:optional true} [:maybe #'SessionCloseCapabilities]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionCapabilities
-  "Create a `SessionCapabilities` value."
-  (rt/make-object-constructor
-    #'SessionCapabilities
-    "SessionCapabilities"
-    [{:key :list, :required? false, :nullable? true}
-     {:key :delete, :required? false, :nullable? true}
-     {:key :additionalDirectories, :required? false, :nullable? true}
-     {:key :resume, :required? false, :nullable? true}
-     {:key :close, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; PromptRequest
-;; -------------------------------------------------------------------------
-
-(def PromptRequest
-  "Request parameters for sending a user prompt to the agent. Contains the user's message and any additional context. See protocol docs: [User Message](https://agentclientprotocol.com/protocol/v1/prompt-turn#1-user-message)"
-  [:map
-   {:closed false}
-   [:sessionId #'SessionId]
-   [:prompt [:vector #'ContentBlock]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->PromptRequest
-  "Create a `PromptRequest` value."
-  (rt/make-object-constructor
-    #'PromptRequest
-    "PromptRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :prompt, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
 
 ;; -------------------------------------------------------------------------
 ;; AgentAuthCapabilities
@@ -3454,30 +1739,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     true))
 
 ;; -------------------------------------------------------------------------
-;; AvailableCommand
-;; -------------------------------------------------------------------------
-
-(def AvailableCommand
-  "Information about a command."
-  [:map
-   {:closed false}
-   [:name :string]
-   [:description :string]
-   [:input {:optional true} [:maybe #'AvailableCommandInput]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->AvailableCommand
-  "Create a `AvailableCommand` value."
-  (rt/make-object-constructor
-    #'AvailableCommand
-    "AvailableCommand"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :description, :required? true, :nullable? false}
-     {:key :input, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
 ;; ElicitationContentValue
 ;; -------------------------------------------------------------------------
 
@@ -3507,28 +1768,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
     #'LogoutCapabilities
     "LogoutCapabilities"
     [{:key :_meta, :required? false, :nullable? true}]
-    false))
-
-;; -------------------------------------------------------------------------
-;; SessionInfoUpdate
-;; -------------------------------------------------------------------------
-
-(def SessionInfoUpdate
-  "Update to session metadata. All fields are optional to support partial updates. Agents send this notification to update session information like title or custom metadata. This allows clients to display dynamic session names and track session state changes."
-  [:map
-   {:closed false}
-   [:title {:optional true} [:maybe :string]]
-   [:updatedAt {:optional true} [:maybe :string]]
-   [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
-
-(def ->SessionInfoUpdate
-  "Create a `SessionInfoUpdate` value."
-  (rt/make-object-constructor
-    #'SessionInfoUpdate
-    "SessionInfoUpdate"
-    [{:key :title, :required? false, :nullable? true}
-     {:key :updatedAt, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
     false))
 
 ;; -------------------------------------------------------------------------
@@ -3570,24 +1809,6 @@ an `ex-info` with a human-readable malli error explanation otherwise."
      {:key :elicitation, :required? false, :nullable? true}
      {:key :_meta, :required? false, :nullable? true}]
     false))
-
-;; -------------------------------------------------------------------------
-;; RequestPermissionOutcome
-;; -------------------------------------------------------------------------
-
-(def RequestPermissionOutcome
-  "The outcome of a permission request."
-  [:or
-   [:map {:closed false} [:outcome [:= "cancelled"]]]
-   [:and
-    [:map {:closed false} [:outcome [:= "selected"]]]
-    #'SelectedPermissionOutcome]])
-
-(def ->RequestPermissionOutcome
-  "Create a `RequestPermissionOutcome` value."
-  (rt/make-value-constructor
-    #'RequestPermissionOutcome
-    "RequestPermissionOutcome"))
 
 ;; -------------------------------------------------------------------------
 ;; ClientRequest

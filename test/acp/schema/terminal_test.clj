@@ -259,6 +259,11 @@
     (test/is (= {:terminalId "terminal-1" :_meta nil}
                 (terminal/->Terminal "terminal-1"))))
 
+  (test/testing "accepts metadata"
+    (test/is (= {:terminalId "terminal-1" :_meta {:traceId "t-1"}}
+                (terminal/->Terminal "terminal-1"
+                                     :meta {:traceId "t-1"}))))
+
   (test/testing "returns a value that satisfies the schema"
     (test/is (m/validate terminal/Terminal
                         (terminal/->Terminal "terminal-1"))))
@@ -268,6 +273,10 @@
       (test/is (thrown? clojure.lang.ExceptionInfo
                         (terminal/->Terminal id))
                (str "expected id " (pr-str id) " to be rejected"))))
+
+  (test/testing "rejects non-map metadata"
+    (test/is (thrown? clojure.lang.ExceptionInfo
+                      (terminal/->Terminal "terminal-1" :meta "meta"))))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (returned #(terminal/->Terminal 42))]

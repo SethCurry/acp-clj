@@ -3,8 +3,11 @@
   (:require [clojure.test :as test]
     [acp.schemas :as schemas]
     [acp.schema.content :as content]
+    [acp.schema.common :as common]
     [acp.schema.terminal :as terminal]
     [acp.schema.tool :as tool]
+    [acp.schema.mcp :as mcp]
+    [acp.schema.session :as session]
     [malli.core :as m]
     [malli.error :as me]))
 
@@ -27,6 +30,17 @@
              [schemas/TerminalId terminal/TerminalId]
              [schemas/TerminalOutputResponse terminal/TerminalOutputResponse]
              [schemas/Terminal terminal/Terminal]
+             [schemas/CreateTerminalRequest tool/CreateTerminalRequest]
+             [schemas/CreateTerminalResponse tool/CreateTerminalResponse]
+             [schemas/TerminalOutputRequest tool/TerminalOutputRequest]
+             [schemas/KillTerminalRequest tool/KillTerminalRequest]
+             [schemas/KillTerminalResponse tool/KillTerminalResponse]
+             [schemas/WaitForTerminalExitRequest
+              tool/WaitForTerminalExitRequest]
+             [schemas/WaitForTerminalExitResponse
+              tool/WaitForTerminalExitResponse]
+             [schemas/ReleaseTerminalRequest tool/ReleaseTerminalRequest]
+             [schemas/ReleaseTerminalResponse tool/ReleaseTerminalResponse]
              [schemas/ToolKind tool/ToolKind]
              [schemas/ToolCallContent tool/ToolCallContent]
              [schemas/Role content/Role]
@@ -41,7 +55,67 @@
              [schemas/EmbeddedResource content/EmbeddedResource]
              [schemas/ContentBlock content/ContentBlock]
              [schemas/Content content/Content]
-             [schemas/Diff content/Diff]]]
+             [schemas/Diff content/Diff]
+             [schemas/ToolCallId tool/ToolCallId]
+             [schemas/ToolCallStatus tool/ToolCallStatus]
+             [schemas/ToolCallLocation tool/ToolCallLocation]
+             [schemas/ToolCall tool/ToolCall]
+             [schemas/ToolCallUpdate tool/ToolCallUpdate]
+             [schemas/HttpHeader mcp/HttpHeader]
+             [schemas/EnvVariable mcp/EnvVariable]
+             [schemas/McpServerHttp mcp/McpServerHttp]
+             [schemas/McpServerSse mcp/McpServerSse]
+             [schemas/McpServerStdio mcp/McpServerStdio]
+             [schemas/McpServer mcp/McpServer]
+             [schemas/SessionId session/SessionId]
+             [schemas/SessionId common/SessionId]
+             [schemas/SessionCapabilities session/SessionCapabilities]
+             [schemas/ClientSessionCapabilities session/ClientSessionCapabilities]
+             [schemas/NewSessionRequest session/NewSessionRequest]
+             [schemas/NewSessionResponse session/NewSessionResponse]
+             [schemas/LoadSessionRequest session/LoadSessionRequest]
+             [schemas/LoadSessionResponse session/LoadSessionResponse]
+             [schemas/ResumeSessionRequest session/ResumeSessionRequest]
+             [schemas/ResumeSessionResponse session/ResumeSessionResponse]
+             [schemas/ListSessionsRequest session/ListSessionsRequest]
+             [schemas/ListSessionsResponse session/ListSessionsResponse]
+             [schemas/SessionInfo session/SessionInfo]
+             [schemas/SessionInfoUpdate session/SessionInfoUpdate]
+             [schemas/DeleteSessionRequest session/DeleteSessionRequest]
+             [schemas/DeleteSessionResponse session/DeleteSessionResponse]
+             [schemas/CloseSessionRequest session/CloseSessionRequest]
+             [schemas/CloseSessionResponse session/CloseSessionResponse]
+             [schemas/SessionMode session/SessionMode]
+             [schemas/SessionModeState session/SessionModeState]
+             [schemas/SetSessionModeRequest session/SetSessionModeRequest]
+             [schemas/CurrentModeUpdate session/CurrentModeUpdate]
+             [schemas/SessionConfigOption session/SessionConfigOption]
+             [schemas/SessionConfigOptionCategory session/SessionConfigOptionCategory]
+             [schemas/SetSessionConfigOptionRequest
+              session/SetSessionConfigOptionRequest]
+             [schemas/SetSessionConfigOptionResponse
+              session/SetSessionConfigOptionResponse]
+             [schemas/ConfigOptionUpdate session/ConfigOptionUpdate]
+             [schemas/ContentChunk session/ContentChunk]
+             [schemas/MessageId session/MessageId]
+             [schemas/SessionUpdate session/SessionUpdate]
+             [schemas/SessionNotification session/SessionNotification]
+             [schemas/StopReason session/StopReason]
+             [schemas/PromptRequest session/PromptRequest]
+             [schemas/PromptResponse session/PromptResponse]
+             [schemas/Plan session/Plan]
+             [schemas/PlanEntry session/PlanEntry]
+             [schemas/AvailableCommand session/AvailableCommand]
+             [schemas/AvailableCommandsUpdate session/AvailableCommandsUpdate]
+             [schemas/Cost session/Cost]
+             [schemas/UsageUpdate session/UsageUpdate]
+             [schemas/Notice session/Notice]
+             [schemas/CompactionUpdate session/CompactionUpdate]
+             [schemas/CompactionSummaryChunk session/CompactionSummaryChunk]
+             [schemas/PermissionOption session/PermissionOption]
+             [schemas/RequestPermissionRequest session/RequestPermissionRequest]
+             [schemas/RequestPermissionResponse session/RequestPermissionResponse]
+             [schemas/CancelNotification session/CancelNotification]]]
       (test/is (identical? exported original))))
 
   (test/testing "constructors alias their defining namespace"
@@ -50,6 +124,17 @@
              [schemas/->TerminalId terminal/->TerminalId]
              [schemas/->TerminalOutputResponse terminal/->TerminalOutputResponse]
              [schemas/->Terminal terminal/->Terminal]
+             [schemas/->CreateTerminalRequest tool/->CreateTerminalRequest]
+             [schemas/->CreateTerminalResponse tool/->CreateTerminalResponse]
+             [schemas/->TerminalOutputRequest tool/->TerminalOutputRequest]
+             [schemas/->KillTerminalRequest tool/->KillTerminalRequest]
+             [schemas/->KillTerminalResponse tool/->KillTerminalResponse]
+             [schemas/->WaitForTerminalExitRequest
+              tool/->WaitForTerminalExitRequest]
+             [schemas/->WaitForTerminalExitResponse
+              tool/->WaitForTerminalExitResponse]
+             [schemas/->ReleaseTerminalRequest tool/->ReleaseTerminalRequest]
+             [schemas/->ReleaseTerminalResponse tool/->ReleaseTerminalResponse]
              [schemas/->ToolKind tool/->ToolKind]
              [schemas/->ToolCallContent tool/->ToolCallContent]
              [schemas/->Role content/->Role]
@@ -64,7 +149,72 @@
              [schemas/->EmbeddedResource content/->EmbeddedResource]
              [schemas/->ContentBlock content/->ContentBlock]
              [schemas/->Content content/->Content]
-             [schemas/->Diff content/->Diff]]]
+             [schemas/->Diff content/->Diff]
+             [schemas/->ToolCallId tool/->ToolCallId]
+             [schemas/->ToolCallStatus tool/->ToolCallStatus]
+             [schemas/->ToolCallLocation tool/->ToolCallLocation]
+             [schemas/->ToolCall tool/->ToolCall]
+             [schemas/->ToolCallUpdate tool/->ToolCallUpdate]
+             [schemas/->HttpHeader mcp/->HttpHeader]
+             [schemas/->EnvVariable mcp/->EnvVariable]
+             [schemas/->McpServerHttp mcp/->McpServerHttp]
+             [schemas/->McpServerSse mcp/->McpServerSse]
+             [schemas/->McpServerStdio mcp/->McpServerStdio]
+             [schemas/->McpServer mcp/->McpServer]
+             [schemas/->SessionId session/->SessionId]
+             [schemas/->SessionId common/->SessionId]
+             [schemas/->SessionCapabilities session/->SessionCapabilities]
+             [schemas/->ClientSessionCapabilities
+              session/->ClientSessionCapabilities]
+             [schemas/->NewSessionRequest session/->NewSessionRequest]
+             [schemas/->NewSessionResponse session/->NewSessionResponse]
+             [schemas/->LoadSessionRequest session/->LoadSessionRequest]
+             [schemas/->LoadSessionResponse session/->LoadSessionResponse]
+             [schemas/->ResumeSessionRequest session/->ResumeSessionRequest]
+             [schemas/->ResumeSessionResponse session/->ResumeSessionResponse]
+             [schemas/->ListSessionsRequest session/->ListSessionsRequest]
+             [schemas/->ListSessionsResponse session/->ListSessionsResponse]
+             [schemas/->SessionInfo session/->SessionInfo]
+             [schemas/->SessionInfoUpdate session/->SessionInfoUpdate]
+             [schemas/->DeleteSessionRequest session/->DeleteSessionRequest]
+             [schemas/->DeleteSessionResponse session/->DeleteSessionResponse]
+             [schemas/->CloseSessionRequest session/->CloseSessionRequest]
+             [schemas/->CloseSessionResponse session/->CloseSessionResponse]
+             [schemas/->SessionMode session/->SessionMode]
+             [schemas/->SessionModeState session/->SessionModeState]
+             [schemas/->SetSessionModeRequest session/->SetSessionModeRequest]
+             [schemas/->CurrentModeUpdate session/->CurrentModeUpdate]
+             [schemas/->SessionConfigOption session/->SessionConfigOption]
+             [schemas/->SessionConfigOptionCategory
+              session/->SessionConfigOptionCategory]
+             [schemas/->SetSessionConfigOptionRequest
+              session/->SetSessionConfigOptionRequest]
+             [schemas/->SetSessionConfigOptionResponse
+              session/->SetSessionConfigOptionResponse]
+             [schemas/->ConfigOptionUpdate session/->ConfigOptionUpdate]
+             [schemas/->ContentChunk session/->ContentChunk]
+             [schemas/->MessageId session/->MessageId]
+             [schemas/->SessionUpdate session/->SessionUpdate]
+             [schemas/->SessionNotification session/->SessionNotification]
+             [schemas/->StopReason session/->StopReason]
+             [schemas/->PromptRequest session/->PromptRequest]
+             [schemas/->PromptResponse session/->PromptResponse]
+             [schemas/->Plan session/->Plan]
+             [schemas/->PlanEntry session/->PlanEntry]
+             [schemas/->AvailableCommand session/->AvailableCommand]
+             [schemas/->AvailableCommandsUpdate
+              session/->AvailableCommandsUpdate]
+             [schemas/->Cost session/->Cost]
+             [schemas/->UsageUpdate session/->UsageUpdate]
+             [schemas/->Notice session/->Notice]
+             [schemas/->CompactionUpdate session/->CompactionUpdate]
+             [schemas/->CompactionSummaryChunk session/->CompactionSummaryChunk]
+             [schemas/->PermissionOption session/->PermissionOption]
+             [schemas/->RequestPermissionRequest
+              session/->RequestPermissionRequest]
+             [schemas/->RequestPermissionResponse
+              session/->RequestPermissionResponse]
+             [schemas/->CancelNotification session/->CancelNotification]]]
       (test/is (identical? exported original))))
 
 
@@ -74,6 +224,7 @@
 (test/deftest every-referenced-schema-is-bound
   (test/testing "schemas defined here resolve their extracted references"
     (test/is (bound? #'schemas/TerminalOutputResponse))
+    (test/is (bound? #'schemas/CreateTerminalRequest))
     (test/is (m/validate schemas/ClientResponse
                         {:id "1"
                          :result {:output "hello" :truncated false}}))
@@ -81,7 +232,14 @@
                         {:id "1"
                          :result {:output "hello"
                                   :truncated true
-                                  :exitStatus {:exitCode 0}}})))))
+                                  :exitStatus {:exitCode 0}}}))
+    (test/is (m/validate schemas/AgentRequest
+                        {:id "1"
+                         :method "terminal/create"
+                         :params {:sessionId "session-1" :command "ls"}}))
+    (test/is (m/validate schemas/ClientResponse
+                        {:id "1"
+                         :result {:terminalId "terminal-1"}})))))
 
 
 (test/deftest extracted-schemas-compose
@@ -91,6 +249,13 @@
     (test/is (m/validate schemas/PromptRequest
                         {:sessionId "session-1"
                          :prompt [{:type "text" :text "hello"}]})))
+    (test/is (m/validate schemas/NewSessionRequest
+                        {:cwd "/tmp"
+                         :mcpServers [{:type "stdio"
+                                       :name "test"
+                                       :command "npx"
+                                       :args []
+                                       :env []}]}))
 
   (test/testing "extracted schemas validate blocks built by this namespace"
     (test/is (m/validate schemas/ContentBlock
@@ -100,7 +265,18 @@
                                                     :path "notes.txt"
                                                     :newText "hello"})))
     (test/is (m/validate schemas/TextContent
-                        (schemas/->TextContent "hello")))))
+                        (schemas/->TextContent "hello"))))
+
+  (test/testing "extracted schemas validate terminal requests and responses"
+    (test/is (m/validate schemas/AgentRequest
+                        {:id "1"
+                         :method "terminal/create"
+                         :params (schemas/->CreateTerminalRequest
+                                  "session-1" "ls")}))
+    (test/is (m/validate schemas/ClientResponse
+                        {:id "1"
+                         :result (schemas/->CreateTerminalResponse
+                                  "terminal-1")}))))
 
 
 (test/deftest extracted-schemas-error-explanation

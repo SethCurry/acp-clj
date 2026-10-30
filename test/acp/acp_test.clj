@@ -10,8 +10,10 @@
             [cheshire.core :as json]
             [acp.agent :as acp]
             [acp.jsonrpc :as jsonrpc]
+            [acp.schemas :as schemas]
             [acp.test-support :as test-support]
-            [clojure.string])
+            [clojure.string]
+            [malli.core :as m])
   (:import [java.io PipedInputStream PipedOutputStream
             ByteArrayOutputStream OutputStream]
            [java.util UUID]))
@@ -218,6 +220,28 @@
 ;; ---------------------------------------------------------------------------
 ;; Outbound requests & notifications
 ;; ---------------------------------------------------------------------------
+
+(deftest send-agent-message-chunk-emits-a-valid-content-block
+  (let [baos (ByteArrayOutputStream.)
+        conn (acp/make-connection (acp/default-handler)
+                                  {:in  (java.io.StringReader. "")
+                                   :out baos})]
+    (try
+      (acp/send-agent-message-chunk conn "session-1" "hello there")
+      (let [messages (read-all baos)
+            update   (-> messages first :params :update)]
+        (is (= 1 (count messages)))
+        (is (= "session/update" (-> messages first :method)))
+        (is (= "session-1" (-> messages first :params :sessionId)))
+        (is (= "agent_message_chunk" (:sessionUpdate update)))
+        ;; `ContentBlock` is a union discriminated by `:type`; without the tag
+        ;; the chunk is not a valid block (and `->SessionUpdate` would throw).
+        (is (= "text" (-> update :content :type)))
+        (is (= "hello there" (-> update :content :text)))
+        (is (m/validate schemas/ContentBlock (:content update)))
+        (is (m/validate schemas/SessionUpdate update)))
+      (finally
+        (acp/shutdown conn 1)))))
 
 (deftest agent-can-send-request-and-receive-response
   (let [[pin pout] (pipe-input)

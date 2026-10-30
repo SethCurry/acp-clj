@@ -101,8 +101,8 @@
 ;; ---------------------------------------------------------------------------
 
 (def ^:private default-info
-  {:name "clai"
-   :title "clai agent"
+  {:name "acp-clj"
+   :title "acp-clj"
    :version "0.1.0-SNAPSHOT"})
 
 (defrecord DefaultHandler
@@ -437,8 +437,7 @@
         (handle-incoming-response conn id envelope))
 
       :invalid
-      (do
-        (jsonrpc/write-message conn (jsonrpc/error-envelope nil (errors/acp-error errors/err-invalid)))))))
+        (jsonrpc/write-message conn (jsonrpc/error-envelope nil (errors/acp-error errors/err-invalid))))))
 
 ;; `process-entry` sends request responses asynchronously from within
 ;; `handle-incoming-request`, which is correct for single messages but would
@@ -512,8 +511,7 @@
     (vector? parsed)
     (cond
       (empty? parsed)
-      (do
-        (jsonrpc/write-message conn (jsonrpc/error-envelope nil (errors/acp-error errors/err-invalid))))
+        (jsonrpc/write-message conn (jsonrpc/error-envelope nil (errors/acp-error errors/err-invalid)))
       :else
       (process-batch conn parsed))
 

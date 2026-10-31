@@ -28,16 +28,14 @@
    [:priority {:optional true} [:maybe number?]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->Annotations
+(defn ->Annotations
   "Create a `Annotations` value."
-  (rt/make-object-constructor
-    #'Annotations
-    "Annotations"
-    [{:key :audience, :required? false, :nullable? true}
-     {:key :lastModified, :required? false, :nullable? true}
-     {:key :priority, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [audience lastModified priority meta]}]
+  (let [value {:audience     audience
+               :lastModified lastModified
+               :priority     priority
+               :_meta        meta}]
+    (rt/validate! #'Annotations value "Annotations")))
 
 
 ;; -------------------------------------------------------------------------
@@ -54,14 +52,11 @@
 
 (defn ->TextContent
   "Create a `TextContent` value."
-  [text]
-  (let [value {
-      :text text
-      :annotations nil
-      :_meta nil
-    }]
-    (rt/validate! #'TextContent value "TextContent")
-    value))
+  [text & {:keys [annotations meta]}]
+  (let [value {:text        text
+               :annotations annotations
+               :_meta       meta}]
+    (rt/validate! #'TextContent value "TextContent")))
 
 
 ;; -------------------------------------------------------------------------
@@ -78,17 +73,15 @@
    [:uri {:optional true} [:maybe :string]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ImageContent
+(defn ->ImageContent
   "Create a `ImageContent` value."
-  (rt/make-object-constructor
-    #'ImageContent
-    "ImageContent"
-    [{:key :data, :required? true, :nullable? false}
-     {:key :mimeType, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :uri, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [data mimeType & {:keys [annotations uri meta]}]
+  (let [value {:annotations annotations
+               :data        data
+               :mimeType    mimeType
+               :uri         uri
+               :_meta       meta}]
+    (rt/validate! #'ImageContent value "ImageContent")))
 
 
 ;; -------------------------------------------------------------------------
@@ -104,16 +97,14 @@
    [:mimeType :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->AudioContent
+(defn ->AudioContent
   "Create a `AudioContent` value."
-  (rt/make-object-constructor
-    #'AudioContent
-    "AudioContent"
-    [{:key :data, :required? true, :nullable? false}
-     {:key :mimeType, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [data mimeType & {:keys [annotations meta]}]
+  (let [value {:annotations annotations
+               :data        data
+               :mimeType    mimeType
+               :_meta       meta}]
+    (rt/validate! #'AudioContent value "AudioContent")))
 
 
 ;; -------------------------------------------------------------------------
@@ -133,20 +124,18 @@
    [:uri :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ResourceLink
+(defn ->ResourceLink
   "Create a `ResourceLink` value."
-  (rt/make-object-constructor
-    #'ResourceLink
-    "ResourceLink"
-    [{:key :name, :required? true, :nullable? false}
-     {:key :uri, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :description, :required? false, :nullable? true}
-     {:key :mimeType, :required? false, :nullable? true}
-     {:key :size, :required? false, :nullable? true}
-     {:key :title, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [name uri & {:keys [annotations description mimeType size title meta]}]
+  (let [value {:annotations annotations
+               :description description
+               :mimeType    mimeType
+               :name        name
+               :size        size
+               :title       title
+               :uri         uri
+               :_meta       meta}]
+    (rt/validate! #'ResourceLink value "ResourceLink")))
 
 
 ;; -------------------------------------------------------------------------
@@ -162,16 +151,14 @@
    [:uri :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->TextResourceContents
+(defn ->TextResourceContents
   "Create a `TextResourceContents` value."
-  (rt/make-object-constructor
-    #'TextResourceContents
-    "TextResourceContents"
-    [{:key :text, :required? true, :nullable? false}
-     {:key :uri, :required? true, :nullable? false}
-     {:key :mimeType, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [text uri & {:keys [mimeType meta]}]
+  (let [value {:mimeType mimeType
+               :text     text
+               :uri      uri
+               :_meta    meta}]
+    (rt/validate! #'TextResourceContents value "TextResourceContents")))
 
 
 ;; -------------------------------------------------------------------------
@@ -187,16 +174,14 @@
    [:uri :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->BlobResourceContents
+(defn ->BlobResourceContents
   "Create a `BlobResourceContents` value."
-  (rt/make-object-constructor
-    #'BlobResourceContents
-    "BlobResourceContents"
-    [{:key :blob, :required? true, :nullable? false}
-     {:key :uri, :required? true, :nullable? false}
-     {:key :mimeType, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [blob uri & {:keys [mimeType meta]}]
+  (let [value {:blob     blob
+               :mimeType mimeType
+               :uri      uri
+               :_meta    meta}]
+    (rt/validate! #'BlobResourceContents value "BlobResourceContents")))
 
 
 ;; -------------------------------------------------------------------------
@@ -226,15 +211,13 @@
    [:resource #'EmbeddedResourceResource]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->EmbeddedResource
+(defn ->EmbeddedResource
   "Create a `EmbeddedResource` value."
-  (rt/make-object-constructor
-    #'EmbeddedResource
-    "EmbeddedResource"
-    [{:key :resource, :required? true, :nullable? false}
-     {:key :annotations, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [resource & {:keys [annotations meta]}]
+  (let [value {:annotations annotations
+               :resource    resource
+               :_meta       meta}]
+    (rt/validate! #'EmbeddedResource value "EmbeddedResource")))
 
 
 ;; -------------------------------------------------------------------------
@@ -266,14 +249,12 @@
    [:content #'ContentBlock]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->Content
+(defn ->Content
   "Create a `Content` value."
-  (rt/make-object-constructor
-    #'Content
-    "Content"
-    [{:key :content, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [content & {:keys [meta]}]
+  (let [value {:content content
+               :_meta   meta}]
+    (rt/validate! #'Content value "Content")))
 
 
 ;; -------------------------------------------------------------------------
@@ -289,13 +270,11 @@
    [:newText :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->Diff
+(defn ->Diff
   "Create a `Diff` value."
-  (rt/make-object-constructor
-    #'Diff
-    "Diff"
-    [{:key :path, :required? true, :nullable? false}
-     {:key :newText, :required? true, :nullable? false}
-     {:key :oldText, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [path newText & {:keys [oldText meta]}]
+  (let [value {:newText newText
+               :oldText oldText
+               :path    path
+               :_meta   meta}]
+    (rt/validate! #'Diff value "Diff")))

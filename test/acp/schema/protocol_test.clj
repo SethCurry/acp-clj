@@ -324,7 +324,7 @@
                               {:outcome "cancelled"})}
                     {:id "request-1"
                      :result (elicitation/->CreateElicitationResponse
-                              {:action "decline"})}
+                              "decline")}
                     {:id "request-1" :result {}}
                     {:id "request-1" :error {:code -32000 :message "bad"}}])
   (support/rejects protocol/ClientResponse
@@ -440,10 +440,10 @@
                       {:id "request-1"
                        :method "elicitation/create"
                        :params (elicitation/->CreateElicitationRequest
-                                {:message "Pick"
-                                 :mode "form"
-                                 :requestedSchema {:type "object"}
-                                 :sessionId "session-1"})}]))
+                                "Pick"
+                                "form"
+                                :requestedSchema {:type "object"}
+                                :sessionId "session-1")}]))
 
   (test/testing "client requests carry initialize and auth payloads"
     (support/accepts protocol/ClientRequest

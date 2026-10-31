@@ -48,14 +48,13 @@
    [:elicitationId #'ElicitationId]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->CompleteElicitationNotification
+(defn ->CompleteElicitationNotification
   "Create a `CompleteElicitationNotification` value."
-  (rt/make-object-constructor
-    #'CompleteElicitationNotification
-    "CompleteElicitationNotification"
-    [{:key :elicitationId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [elicitationId & {:keys [meta]}]
+  (let [value {:elicitationId elicitationId
+               :_meta         meta}]
+    (rt/validate! #'CompleteElicitationNotification
+                  value "CompleteElicitationNotification")))
 
 
 ;; -------------------------------------------------------------------------
@@ -80,14 +79,24 @@
        [:map {:closed false} [:mode [:= "form"]]]
        [:map {:closed false} [:mode [:= "url"]]]]]]]])
 
-(def ->CreateElicitationRequest
-  "Create a `CreateElicitationRequest` value."
-  (rt/make-object-constructor
-    #'CreateElicitationRequest
-    "CreateElicitationRequest"
-    [{:key :message, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    true))
+(defn ->CreateElicitationRequest
+  "Create a `CreateElicitationRequest` value.
+
+  `:mode` is the variant discriminator: form requests take
+  `:requestedSchema`, url requests take `:elicitationId` and `:url`, and
+  both take a `:sessionId`/`:toolCallId` or `:requestId` scope."
+  [message mode & {:keys [requestedSchema elicitationId url sessionId toolCallId requestId meta]}]
+  (let [value (cond-> {:message message
+                       :mode    mode
+                       :_meta   meta}
+                (some? requestedSchema) (assoc :requestedSchema requestedSchema)
+                (some? elicitationId)   (assoc :elicitationId elicitationId)
+                (some? url)             (assoc :url url)
+                (some? sessionId)       (assoc :sessionId sessionId)
+                (some? toolCallId)      (assoc :toolCallId toolCallId)
+                (some? requestId)       (assoc :requestId requestId))]
+    (rt/validate! #'CreateElicitationRequest
+                  value "CreateElicitationRequest")))
 
 
 ;; -------------------------------------------------------------------------
@@ -114,13 +123,17 @@
        [:map {:closed false} [:action [:= "decline"]]]
        [:map {:closed false} [:action [:= "cancel"]]]]]]]])
 
-(def ->CreateElicitationResponse
-  "Create a `CreateElicitationResponse` value."
-  (rt/make-object-constructor
-    #'CreateElicitationResponse
-    "CreateElicitationResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    true))
+(defn ->CreateElicitationResponse
+  "Create a `CreateElicitationResponse` value.
+
+  `:action` is the variant discriminator: accepted elicitations may carry
+  a `:content` map of the submitted values."
+  [action & {:keys [content meta]}]
+  (let [value (cond-> {:action action
+                       :_meta  meta}
+                (some? content) (assoc :content content))]
+    (rt/validate! #'CreateElicitationResponse
+                  value "CreateElicitationResponse")))
 
 
 ;; -------------------------------------------------------------------------
@@ -135,13 +148,11 @@
     {:optional true}
     [:maybe [:map-of :string #'ElicitationContentValue]]]])
 
-(def ->ElicitationAcceptAction
+(defn ->ElicitationAcceptAction
   "Create a `ElicitationAcceptAction` value."
-  (rt/make-object-constructor
-    #'ElicitationAcceptAction
-    "ElicitationAcceptAction"
-    [{:key :content, :required? false, :nullable? true}]
-    false))
+  [& {:keys [content]}]
+  (let [value {:content content}]
+    (rt/validate! #'ElicitationAcceptAction value "ElicitationAcceptAction")))
 
 
 ;; -------------------------------------------------------------------------
@@ -156,15 +167,13 @@
    [:url {:optional true} [:maybe #'ElicitationUrlCapabilities]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ElicitationCapabilities
+(defn ->ElicitationCapabilities
   "Create a `ElicitationCapabilities` value."
-  (rt/make-object-constructor
-    #'ElicitationCapabilities
-    "ElicitationCapabilities"
-    [{:key :form, :required? false, :nullable? true}
-     {:key :url, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [form url meta]}]
+  (let [value {:form form
+               :url  url
+               :_meta meta}]
+    (rt/validate! #'ElicitationCapabilities value "ElicitationCapabilities")))
 
 
 ;; -------------------------------------------------------------------------
@@ -192,13 +201,12 @@
    {:closed false}
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ElicitationFormCapabilities
+(defn ->ElicitationFormCapabilities
   "Create a `ElicitationFormCapabilities` value."
-  (rt/make-object-constructor
-    #'ElicitationFormCapabilities
-    "ElicitationFormCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [meta]}]
+  (let [value {:_meta meta}]
+    (rt/validate! #'ElicitationFormCapabilities
+                  value "ElicitationFormCapabilities")))
 
 
 ;; -------------------------------------------------------------------------
@@ -211,13 +219,17 @@
    [:map {:closed false} [:requestedSchema #'ElicitationSchema]]
    [:or #'ElicitationSessionScope #'ElicitationRequestScope]])
 
-(def ->ElicitationFormMode
-  "Create a `ElicitationFormMode` value."
-  (rt/make-object-constructor
-    #'ElicitationFormMode
-    "ElicitationFormMode"
-    [{:key :requestedSchema, :required? true, :nullable? false}]
-    true))
+(defn ->ElicitationFormMode
+  "Create a `ElicitationFormMode` value.
+
+  The scope is either a `:sessionId` (optionally with `:toolCallId`) or a
+  `:requestId`."
+  [requestedSchema & {:keys [sessionId toolCallId requestId]}]
+  (let [value (cond-> {:requestedSchema requestedSchema}
+                (some? sessionId)  (assoc :sessionId sessionId)
+                (some? toolCallId) (assoc :toolCallId toolCallId)
+                (some? requestId)  (assoc :requestId requestId))]
+    (rt/validate! #'ElicitationFormMode value "ElicitationFormMode")))
 
 
 ;; -------------------------------------------------------------------------
@@ -280,13 +292,11 @@
   "Request-scoped elicitation, tied to a specific JSON-RPC request outside of a session (e.g., during auth/configuration phases before any session is started)."
   [:map {:closed false} [:requestId #'common/RequestId]])
 
-(def ->ElicitationRequestScope
+(defn ->ElicitationRequestScope
   "Create a `ElicitationRequestScope` value."
-  (rt/make-object-constructor
-    #'ElicitationRequestScope
-    "ElicitationRequestScope"
-    [{:key :requestId, :required? true, :nullable? false}]
-    false))
+  [requestId]
+  (let [value {:requestId requestId}]
+    (rt/validate! #'ElicitationRequestScope value "ElicitationRequestScope")))
 
 
 ;; -------------------------------------------------------------------------
@@ -306,18 +316,16 @@
    [:description {:optional true} [:maybe :string]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ElicitationSchema
+(defn ->ElicitationSchema
   "Create a `ElicitationSchema` value."
-  (rt/make-object-constructor
-    #'ElicitationSchema
-    "ElicitationSchema"
-    [{:key :type, :required? false, :nullable? false}
-     {:key :title, :required? false, :nullable? true}
-     {:key :properties, :required? false, :nullable? false}
-     {:key :required, :required? false, :nullable? true}
-     {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [type title properties required description meta]}]
+  (let [value (cond-> {:title       title
+                       :required    required
+                       :description description
+                       :_meta       meta}
+                (some? type)       (assoc :type type)
+                (some? properties) (assoc :properties properties))]
+    (rt/validate! #'ElicitationSchema value "ElicitationSchema")))
 
 
 ;; -------------------------------------------------------------------------
@@ -346,14 +354,12 @@
    [:sessionId #'common/SessionId]
    [:toolCallId {:optional true} [:maybe #'tool/ToolCallId]]])
 
-(def ->ElicitationSessionScope
+(defn ->ElicitationSessionScope
   "Create a `ElicitationSessionScope` value."
-  (rt/make-object-constructor
-    #'ElicitationSessionScope
-    "ElicitationSessionScope"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :toolCallId, :required? false, :nullable? true}]
-    false))
+  [sessionId & {:keys [toolCallId]}]
+  (let [value {:sessionId  sessionId
+               :toolCallId toolCallId}]
+    (rt/validate! #'ElicitationSessionScope value "ElicitationSessionScope")))
 
 
 ;; -------------------------------------------------------------------------
@@ -366,13 +372,12 @@
    {:closed false}
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ElicitationUrlCapabilities
+(defn ->ElicitationUrlCapabilities
   "Create a `ElicitationUrlCapabilities` value."
-  (rt/make-object-constructor
-    #'ElicitationUrlCapabilities
-    "ElicitationUrlCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [meta]}]
+  (let [value {:_meta meta}]
+    (rt/validate! #'ElicitationUrlCapabilities
+                  value "ElicitationUrlCapabilities")))
 
 
 ;; -------------------------------------------------------------------------
@@ -385,14 +390,18 @@
    [:map {:closed false} [:elicitationId #'ElicitationId] [:url :string]]
    [:or #'ElicitationSessionScope #'ElicitationRequestScope]])
 
-(def ->ElicitationUrlMode
-  "Create a `ElicitationUrlMode` value."
-  (rt/make-object-constructor
-    #'ElicitationUrlMode
-    "ElicitationUrlMode"
-    [{:key :elicitationId, :required? true, :nullable? false}
-     {:key :url, :required? true, :nullable? false}]
-    true))
+(defn ->ElicitationUrlMode
+  "Create a `ElicitationUrlMode` value.
+
+  The scope is either a `:sessionId` (optionally with `:toolCallId`) or a
+  `:requestId`."
+  [elicitationId url & {:keys [sessionId toolCallId requestId]}]
+  (let [value (cond-> {:elicitationId elicitationId
+                       :url           url}
+                (some? sessionId)  (assoc :sessionId sessionId)
+                (some? toolCallId) (assoc :toolCallId toolCallId)
+                (some? requestId)  (assoc :requestId requestId))]
+    (rt/validate! #'ElicitationUrlMode value "ElicitationUrlMode")))
 
 
 ;; -------------------------------------------------------------------------
@@ -408,16 +417,14 @@
    [:default {:optional true} [:maybe :boolean]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->BooleanPropertySchema
+(defn ->BooleanPropertySchema
   "Create a `BooleanPropertySchema` value."
-  (rt/make-object-constructor
-    #'BooleanPropertySchema
-    "BooleanPropertySchema"
-    [{:key :title, :required? false, :nullable? true}
-     {:key :description, :required? false, :nullable? true}
-     {:key :default, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [title description default meta]}]
+  (let [value {:title       title
+               :description description
+               :default     default
+               :_meta       meta}]
+    (rt/validate! #'BooleanPropertySchema value "BooleanPropertySchema")))
 
 
 ;; -------------------------------------------------------------------------
@@ -433,16 +440,14 @@
    [:description {:optional true} [:maybe :string]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->EnumOption
+(defn ->EnumOption
   "Create a `EnumOption` value."
-  (rt/make-object-constructor
-    #'EnumOption
-    "EnumOption"
-    [{:key :const, :required? true, :nullable? false}
-     {:key :title, :required? true, :nullable? false}
-     {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [const title & {:keys [description meta]}]
+  (let [value {:const       const
+               :title       title
+               :description description
+               :_meta       meta}]
+    (rt/validate! #'EnumOption value "EnumOption")))
 
 
 ;; -------------------------------------------------------------------------
@@ -460,18 +465,16 @@
    [:default {:optional true} [:maybe :int]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->IntegerPropertySchema
+(defn ->IntegerPropertySchema
   "Create a `IntegerPropertySchema` value."
-  (rt/make-object-constructor
-    #'IntegerPropertySchema
-    "IntegerPropertySchema"
-    [{:key :title, :required? false, :nullable? true}
-     {:key :description, :required? false, :nullable? true}
-     {:key :minimum, :required? false, :nullable? true}
-     {:key :maximum, :required? false, :nullable? true}
-     {:key :default, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [title description minimum maximum default meta]}]
+  (let [value {:title       title
+               :description description
+               :minimum     minimum
+               :maximum     maximum
+               :default     default
+               :_meta       meta}]
+    (rt/validate! #'IntegerPropertySchema value "IntegerPropertySchema")))
 
 
 ;; -------------------------------------------------------------------------
@@ -510,19 +513,18 @@
    [:default {:optional true} [:maybe [:vector :string]]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->MultiSelectPropertySchema
+(defn ->MultiSelectPropertySchema
   "Create a `MultiSelectPropertySchema` value."
-  (rt/make-object-constructor
-    #'MultiSelectPropertySchema
-    "MultiSelectPropertySchema"
-    [{:key :items, :required? true, :nullable? false}
-     {:key :title, :required? false, :nullable? true}
-     {:key :description, :required? false, :nullable? true}
-     {:key :minItems, :required? false, :nullable? true}
-     {:key :maxItems, :required? false, :nullable? true}
-     {:key :default, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [items & {:keys [title description minItems maxItems default meta]}]
+  (let [value {:title       title
+               :description description
+               :minItems    minItems
+               :maxItems    maxItems
+               :items       items
+               :default     default
+               :_meta       meta}]
+    (rt/validate! #'MultiSelectPropertySchema
+                  value "MultiSelectPropertySchema")))
 
 
 ;; -------------------------------------------------------------------------
@@ -540,18 +542,16 @@
    [:default {:optional true} [:maybe number?]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->NumberPropertySchema
+(defn ->NumberPropertySchema
   "Create a `NumberPropertySchema` value."
-  (rt/make-object-constructor
-    #'NumberPropertySchema
-    "NumberPropertySchema"
-    [{:key :title, :required? false, :nullable? true}
-     {:key :description, :required? false, :nullable? true}
-     {:key :minimum, :required? false, :nullable? true}
-     {:key :maximum, :required? false, :nullable? true}
-     {:key :default, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [title description minimum maximum default meta]}]
+  (let [value {:title       title
+               :description description
+               :minimum     minimum
+               :maximum     maximum
+               :default     default
+               :_meta       meta}]
+    (rt/validate! #'NumberPropertySchema value "NumberPropertySchema")))
 
 
 ;; -------------------------------------------------------------------------
@@ -578,14 +578,12 @@
    [:enum [:vector :string]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->StringMultiSelectItems
+(defn ->StringMultiSelectItems
   "Create a `StringMultiSelectItems` value."
-  (rt/make-object-constructor
-    #'StringMultiSelectItems
-    "StringMultiSelectItems"
-    [{:key :enum, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [enum & {:keys [meta]}]
+  (let [value {:enum  enum
+               :_meta meta}]
+    (rt/validate! #'StringMultiSelectItems value "StringMultiSelectItems")))
 
 
 ;; -------------------------------------------------------------------------
@@ -607,22 +605,20 @@
    [:oneOf {:optional true} [:maybe [:vector #'EnumOption]]]
    [:pattern {:optional true} [:maybe :string]]])
 
-(def ->StringPropertySchema
+(defn ->StringPropertySchema
   "Create a `StringPropertySchema` value."
-  (rt/make-object-constructor
-    #'StringPropertySchema
-    "StringPropertySchema"
-    [{:key :description, :required? false, :nullable? true}
-     {:key :enum, :required? false, :nullable? true}
-     {:key :format, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}
-     {:key :default, :required? false, :nullable? true}
-     {:key :minLength, :required? false, :nullable? true}
-     {:key :title, :required? false, :nullable? true}
-     {:key :maxLength, :required? false, :nullable? true}
-     {:key :oneOf, :required? false, :nullable? true}
-     {:key :pattern, :required? false, :nullable? true}]
-    false))
+  [& {:keys [description enum format meta default minLength title maxLength oneOf pattern]}]
+  (let [value {:description description
+               :enum        enum
+               :format      format
+               :_meta       meta
+               :default     default
+               :minLength   minLength
+               :title       title
+               :maxLength   maxLength
+               :oneOf       oneOf
+               :pattern     pattern}]
+    (rt/validate! #'StringPropertySchema value "StringPropertySchema")))
 
 
 ;; -------------------------------------------------------------------------
@@ -636,11 +632,9 @@
    [:anyOf [:vector #'EnumOption]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->TitledMultiSelectItems
+(defn ->TitledMultiSelectItems
   "Create a `TitledMultiSelectItems` value."
-  (rt/make-object-constructor
-    #'TitledMultiSelectItems
-    "TitledMultiSelectItems"
-    [{:key :anyOf, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [anyOf & {:keys [meta]}]
+  (let [value {:anyOf anyOf
+               :_meta meta}]
+    (rt/validate! #'TitledMultiSelectItems value "TitledMultiSelectItems")))

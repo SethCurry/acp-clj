@@ -300,8 +300,8 @@
   (send-session-update conn sid
     (schemas/->SessionUpdate
      {:sessionUpdate "agent_message_chunk"
-      :content       (schemas/->ContentBlock
-                      (assoc (schemas/->TextContent content) :type "text"))})))
+      :content
+                      (assoc (schemas/->TextContent content) :type "text")})))
 
 (defn request-permission
   "Send a `session/request_permission` request and return its promise. Blocks

@@ -26,15 +26,13 @@
    [:writeTextFile {:optional true} :boolean]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->FileSystemCapabilities
+(defn ->FileSystemCapabilities
   "Create a `FileSystemCapabilities` value."
-  (rt/make-object-constructor
-    #'FileSystemCapabilities
-    "FileSystemCapabilities"
-    [{:key :readTextFile, :required? false, :nullable? false}
-     {:key :writeTextFile, :required? false, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [readTextFile writeTextFile meta]}]
+  (let [value (cond-> {:_meta meta}
+                (some? readTextFile)  (assoc :readTextFile readTextFile)
+                (some? writeTextFile) (assoc :writeTextFile writeTextFile))]
+    (rt/validate! #'FileSystemCapabilities value "FileSystemCapabilities")))
 
 
 ;; -------------------------------------------------------------------------
@@ -51,17 +49,15 @@
    [:limit {:optional true} [:maybe [:int {:min 0}]]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ReadTextFileRequest
+(defn ->ReadTextFileRequest
   "Create a `ReadTextFileRequest` value."
-  (rt/make-object-constructor
-    #'ReadTextFileRequest
-    "ReadTextFileRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :path, :required? true, :nullable? false}
-     {:key :line, :required? false, :nullable? true}
-     {:key :limit, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [sessionId path & {:keys [line limit meta]}]
+  (let [value {:sessionId sessionId
+               :path      path
+               :line      line
+               :limit     limit
+               :_meta     meta}]
+    (rt/validate! #'ReadTextFileRequest value "ReadTextFileRequest")))
 
 
 ;; -------------------------------------------------------------------------
@@ -75,14 +71,12 @@
    [:content :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->ReadTextFileResponse
+(defn ->ReadTextFileResponse
   "Create a `ReadTextFileResponse` value."
-  (rt/make-object-constructor
-    #'ReadTextFileResponse
-    "ReadTextFileResponse"
-    [{:key :content, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [content & {:keys [meta]}]
+  (let [value {:content content
+               :_meta   meta}]
+    (rt/validate! #'ReadTextFileResponse value "ReadTextFileResponse")))
 
 
 ;; -------------------------------------------------------------------------
@@ -98,16 +92,14 @@
    [:content :string]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->WriteTextFileRequest
+(defn ->WriteTextFileRequest
   "Create a `WriteTextFileRequest` value."
-  (rt/make-object-constructor
-    #'WriteTextFileRequest
-    "WriteTextFileRequest"
-    [{:key :sessionId, :required? true, :nullable? false}
-     {:key :path, :required? true, :nullable? false}
-     {:key :content, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [sessionId path content & {:keys [meta]}]
+  (let [value {:sessionId sessionId
+               :path      path
+               :content   content
+               :_meta     meta}]
+    (rt/validate! #'WriteTextFileRequest value "WriteTextFileRequest")))
 
 
 ;; -------------------------------------------------------------------------
@@ -120,10 +112,8 @@
    {:closed false}
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->WriteTextFileResponse
+(defn ->WriteTextFileResponse
   "Create a `WriteTextFileResponse` value."
-  (rt/make-object-constructor
-    #'WriteTextFileResponse
-    "WriteTextFileResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [meta]}]
+  (let [value {:_meta meta}]
+    (rt/validate! #'WriteTextFileResponse value "WriteTextFileResponse")))

@@ -30,14 +30,12 @@
    [:terminal {:optional true} :boolean]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->AuthCapabilities
+(defn ->AuthCapabilities
   "Create a `AuthCapabilities` value."
-  (rt/make-object-constructor
-    #'AuthCapabilities
-    "AuthCapabilities"
-    [{:key :terminal, :required? false, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [terminal meta]}]
+  (let [value (cond-> {:_meta meta}
+                (some? terminal) (assoc :terminal terminal))]
+    (rt/validate! #'AuthCapabilities value "AuthCapabilities")))
 
 
 ;; -------------------------------------------------------------------------
@@ -51,14 +49,12 @@
    [:logout {:optional true} [:maybe #'LogoutCapabilities]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->AgentAuthCapabilities
+(defn ->AgentAuthCapabilities
   "Create a `AgentAuthCapabilities` value."
-  (rt/make-object-constructor
-    #'AgentAuthCapabilities
-    "AgentAuthCapabilities"
-    [{:key :logout, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [logout meta]}]
+  (let [value {:logout logout
+               :_meta  meta}]
+    (rt/validate! #'AgentAuthCapabilities value "AgentAuthCapabilities")))
 
 
 ;; -------------------------------------------------------------------------
@@ -73,9 +69,10 @@
     #'AuthMethodTerminal]
    #'AuthMethodAgent])
 
-(def ->AuthMethod
+(defn ->AuthMethod
   "Create a `AuthMethod` value."
-  (rt/make-value-constructor #'AuthMethod "AuthMethod"))
+  [method]
+  (rt/validate! #'AuthMethod method "AuthMethod"))
 
 
 ;; -------------------------------------------------------------------------
@@ -91,16 +88,14 @@
    [:description {:optional true} [:maybe :string]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->AuthMethodAgent
+(defn ->AuthMethodAgent
   "Create a `AuthMethodAgent` value."
-  (rt/make-object-constructor
-    #'AuthMethodAgent
-    "AuthMethodAgent"
-    [{:key :id, :required? true, :nullable? false}
-     {:key :name, :required? true, :nullable? false}
-     {:key :description, :required? false, :nullable? true}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [id name & {:keys [description meta]}]
+  (let [value {:id          id
+               :name        name
+               :description description
+               :_meta       meta}]
+    (rt/validate! #'AuthMethodAgent value "AuthMethodAgent")))
 
 
 ;; -------------------------------------------------------------------------
@@ -111,9 +106,10 @@
   "Typed identifier used for auth method values on the wire."
   :string)
 
-(def ->AuthMethodId
+(defn ->AuthMethodId
   "Create a `AuthMethodId` value."
-  (rt/make-value-constructor #'AuthMethodId "AuthMethodId"))
+  [id]
+  (rt/validate! #'AuthMethodId id "AuthMethodId"))
 
 
 ;; -------------------------------------------------------------------------
@@ -131,18 +127,16 @@
    [:env {:optional true} [:map-of :string :string]]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->AuthMethodTerminal
+(defn ->AuthMethodTerminal
   "Create a `AuthMethodTerminal` value."
-  (rt/make-object-constructor
-    #'AuthMethodTerminal
-    "AuthMethodTerminal"
-    [{:key :id, :required? true, :nullable? false}
-     {:key :name, :required? true, :nullable? false}
-     {:key :description, :required? false, :nullable? true}
-     {:key :args, :required? false, :nullable? false}
-     {:key :env, :required? false, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [id name & {:keys [description args env meta]}]
+  (let [value (cond-> {:id          id
+                       :name        name
+                       :description description
+                       :_meta       meta}
+                (some? args) (assoc :args args)
+                (some? env)  (assoc :env env))]
+    (rt/validate! #'AuthMethodTerminal value "AuthMethodTerminal")))
 
 
 ;; -------------------------------------------------------------------------
@@ -156,14 +150,12 @@
    [:methodId #'AuthMethodId]
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->AuthenticateRequest
+(defn ->AuthenticateRequest
   "Create a `AuthenticateRequest` value."
-  (rt/make-object-constructor
-    #'AuthenticateRequest
-    "AuthenticateRequest"
-    [{:key :methodId, :required? true, :nullable? false}
-     {:key :_meta, :required? false, :nullable? true}]
-    false))
+  [methodId & {:keys [meta]}]
+  (let [value {:methodId methodId
+               :_meta     meta}]
+    (rt/validate! #'AuthenticateRequest value "AuthenticateRequest")))
 
 
 ;; -------------------------------------------------------------------------
@@ -176,13 +168,11 @@
    {:closed false}
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->AuthenticateResponse
+(defn ->AuthenticateResponse
   "Create a `AuthenticateResponse` value."
-  (rt/make-object-constructor
-    #'AuthenticateResponse
-    "AuthenticateResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [meta]}]
+  (let [value {:_meta meta}]
+    (rt/validate! #'AuthenticateResponse value "AuthenticateResponse")))
 
 
 ;; -------------------------------------------------------------------------
@@ -195,13 +185,11 @@
    {:closed false}
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->LogoutCapabilities
+(defn ->LogoutCapabilities
   "Create a `LogoutCapabilities` value."
-  (rt/make-object-constructor
-    #'LogoutCapabilities
-    "LogoutCapabilities"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [meta]}]
+  (let [value {:_meta meta}]
+    (rt/validate! #'LogoutCapabilities value "LogoutCapabilities")))
 
 
 ;; -------------------------------------------------------------------------
@@ -214,13 +202,11 @@
    {:closed false}
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->LogoutRequest
+(defn ->LogoutRequest
   "Create a `LogoutRequest` value."
-  (rt/make-object-constructor
-    #'LogoutRequest
-    "LogoutRequest"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [meta]}]
+  (let [value {:_meta meta}]
+    (rt/validate! #'LogoutRequest value "LogoutRequest")))
 
 
 ;; -------------------------------------------------------------------------
@@ -233,10 +219,8 @@
    {:closed false}
    [:_meta {:optional true} [:maybe [:map {:closed false}]]]])
 
-(def ->LogoutResponse
+(defn ->LogoutResponse
   "Create a `LogoutResponse` value."
-  (rt/make-object-constructor
-    #'LogoutResponse
-    "LogoutResponse"
-    [{:key :_meta, :required? false, :nullable? true}]
-    false))
+  [& {:keys [meta]}]
+  (let [value {:_meta meta}]
+    (rt/validate! #'LogoutResponse value "LogoutResponse")))

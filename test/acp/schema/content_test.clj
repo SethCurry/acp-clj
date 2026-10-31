@@ -70,16 +70,16 @@
     (test/is (= {:audience nil :lastModified nil :priority nil :_meta nil}
                 (content/->Annotations))))
 
-  (test/testing "accepts a map of annotations"
+  (test/testing "accepts annotations as keyword arguments"
     (test/is (m/validate content/Annotations
-                        (content/->Annotations {:audience ["user"] :priority 0.5}))))
+                        (content/->Annotations :audience ["user"] :priority 0.5))))
 
   (test/testing "rejects invalid annotations"
     (test/is (thrown? clojure.lang.ExceptionInfo
-                      (content/->Annotations {:audience ["everyone"]}))))
+                      (content/->Annotations :audience ["everyone"]))))
 
   (test/testing "throws an ex-info with schema, value and errors"
-    (let [e (returned #(content/->Annotations {:priority "high"}))]
+    (let [e (returned #(content/->Annotations :priority "high"))]
       (test/is (instance? clojure.lang.ExceptionInfo e))
       (test/is (false? (m/validate (:schema (ex-data e))
                                    (:value (ex-data e)))))

@@ -41,18 +41,18 @@
 
   (test/testing "accepts capability flags and metadata"
     (support/builds fs/FileSystemCapabilities fs/->FileSystemCapabilities
-                    [{:readTextFile true
-                      :writeTextFile true
-                      :_meta {:traceId "t-1"}}]
+                    [:readTextFile true
+                     :writeTextFile true
+                     :meta {:traceId "t-1"}]
                     {:readTextFile true
                      :writeTextFile true
                      :_meta {:traceId "t-1"}}))
 
   (test/testing "rejects invalid capabilities"
     (support/ctor-rejects fs/->FileSystemCapabilities
-                          [[{:readTextFile "yes"}]
-                           [{:writeTextFile nil}]
-                           [{:_meta "meta"}]])))
+                          [[:readTextFile "yes"]
+                           [:writeTextFile 1]
+                           [:meta "meta"]])))
 
 
 ;; -------------------------------------------------------------------------
@@ -108,7 +108,9 @@
     (support/builds fs/ReadTextFileRequest fs/->ReadTextFileRequest
                     ["session-1"
                      "notes.txt"
-                     {:line 2 :limit 5 :_meta {:traceId "t-1"}}]
+                     :line 2
+                     :limit 5
+                     :meta {:traceId "t-1"}]
                     {:sessionId "session-1"
                      :path "notes.txt"
                      :line 2
@@ -119,9 +121,9 @@
     (support/ctor-rejects fs/->ReadTextFileRequest
                           [[nil "notes.txt"]
                            ["session-1" nil]
-                           ["session-1" "notes.txt" {:line -1}]
-                           ["session-1" "notes.txt" {:limit 1.5}]
-                           ["session-1" "notes.txt" {:_meta "meta"}]]))
+                           ["session-1" "notes.txt" :line -1]
+                           ["session-1" "notes.txt" :limit 1.5]
+                           ["session-1" "notes.txt" :meta "meta"]]))
 
   (test/testing "requires a session id and a path"
     (test/is (thrown? Exception
@@ -161,12 +163,12 @@
 
   (test/testing "accepts metadata"
     (support/builds fs/ReadTextFileResponse fs/->ReadTextFileResponse
-                    ["hello" {:_meta {:traceId "t-1"}}]
+                    ["hello" :meta {:traceId "t-1"}]
                     {:content "hello" :_meta {:traceId "t-1"}}))
 
   (test/testing "rejects invalid arguments"
     (support/ctor-rejects fs/->ReadTextFileResponse
-                          [[nil] [1] [:hello] ["hello" {:_meta "meta"}]])))
+                          [[nil] [1] [:hello] ["hello" :meta "meta"]])))
 
 
 ;; -------------------------------------------------------------------------
@@ -222,7 +224,7 @@
                     ["session-1"
                      "notes.txt"
                      "hello"
-                     {:_meta {:traceId "t-1"}}]
+                     :meta {:traceId "t-1"}]
                     {:sessionId "session-1"
                      :path "notes.txt"
                      :content "hello"
@@ -233,7 +235,7 @@
                           [[nil "notes.txt" "hello"]
                            ["session-1" nil "hello"]
                            ["session-1" "notes.txt" nil]
-                           ["session-1" "notes.txt" "hello" {:_meta "meta"}]]))
+                           ["session-1" "notes.txt" "hello" :meta "meta"]]))
 
   (test/testing "requires all three positional arguments"
     (test/is (thrown? Exception
@@ -270,16 +272,16 @@
                     []
                     {:_meta nil})
     (support/builds fs/WriteTextFileResponse fs/->WriteTextFileResponse
-                    [{:_meta {:traceId "t-1"}}]
+                    [:meta {:traceId "t-1"}]
                     {:_meta {:traceId "t-1"}}))
 
   (test/testing "rejects non-map metadata"
     (support/ctor-rejects fs/->WriteTextFileResponse
-                          [[{:_meta "meta"}]
-                           [{:_meta 42}]]))
+                          [[:meta "meta"]
+                           [:meta 42]]))
 
   (test/testing "throws an ex-info with schema, value and errors"
-    (let [e (support/returned #(fs/->WriteTextFileResponse {:_meta "meta"}))]
+    (let [e (support/returned #(fs/->WriteTextFileResponse :meta "meta"))]
       (test/is (instance? clojure.lang.ExceptionInfo e))
       (test/is (false? (m/validate (:schema (ex-data e))
                                    (:value (ex-data e)))))

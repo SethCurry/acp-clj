@@ -139,10 +139,10 @@
                   {:sessionId "session-1" :toolCallId nil})
   (support/builds elicitation/ElicitationSessionScope
                   elicitation/->ElicitationSessionScope
-                  ["session-1" {:toolCallId "call-1"}]
+                  ["session-1" :toolCallId "call-1"]
                   {:sessionId "session-1" :toolCallId "call-1"})
   (support/ctor-rejects elicitation/->ElicitationSessionScope
-                        [[nil] [1] ["session-1" {:toolCallId 1}]]))
+                        [[nil] [1] ["session-1" :toolCallId 1]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -174,10 +174,10 @@
     (test/testing (str what " fills the metadata slot")
       (support/builds schema ctor [] {:_meta nil})
       (support/builds schema ctor
-                      [{:_meta {:traceId "t-1"}}]
+                      [:meta {:traceId "t-1"}]
                       {:_meta {:traceId "t-1"}}))
     (test/testing (str what " rejects malformed metadata")
-      (support/ctor-rejects ctor [[{:_meta "meta"}] [{:_meta 42}]]))))
+      (support/ctor-rejects ctor [[:meta "meta"] [:meta 42]]))))
 
 
 (test/deftest ElicitationCapabilities-schema
@@ -206,12 +206,12 @@
                   {:form nil :url nil :_meta nil})
   (support/builds elicitation/ElicitationCapabilities
                   elicitation/->ElicitationCapabilities
-                  [{:form {} :url {} :_meta {:traceId "t-1"}}]
+                  [:form {} :url {} :meta {:traceId "t-1"}]
                   {:form {} :url {} :_meta {:traceId "t-1"}})
   (support/ctor-rejects elicitation/->ElicitationCapabilities
-                        [[{:form "yes"}]
-                         [{:url []}]
-                         [{:_meta "meta"}]]))
+                        [[:form "yes"]
+                         [:url []]
+                         [:meta "meta"]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -236,16 +236,16 @@
 (test/deftest ->ElicitationFormMode
   (support/builds elicitation/ElicitationFormMode
                   elicitation/->ElicitationFormMode
-                  [{:requestedSchema {:type "object"} :sessionId "session-1"}]
+                  [{:type "object"} :sessionId "session-1"]
                   {:requestedSchema {:type "object"} :sessionId "session-1"})
   (support/builds elicitation/ElicitationFormMode
                   elicitation/->ElicitationFormMode
-                  [{:requestedSchema {} :requestId "request-1"}]
+                  [{} :requestId "request-1"]
                   {:requestedSchema {} :requestId "request-1"})
   (support/ctor-rejects elicitation/->ElicitationFormMode
-                        [[{}]
-                         [{:sessionId "session-1"}]
-                         [{:requestedSchema {} }]]))
+                        [[{:type "object"}]
+                         [:sessionId "session-1"]
+                         [{} :requestId 1.5]]))
 
 
 (test/deftest ElicitationUrlMode-schema
@@ -278,20 +278,20 @@
 (test/deftest ->ElicitationUrlMode
   (support/builds elicitation/ElicitationUrlMode
                   elicitation/->ElicitationUrlMode
-                  ["elicitation-1" "https://example.test" {:sessionId "session-1"}]
+                  ["elicitation-1" "https://example.test" :sessionId "session-1"]
                   {:elicitationId "elicitation-1"
                    :url "https://example.test"
                    :sessionId "session-1"})
   (support/builds elicitation/ElicitationUrlMode
                   elicitation/->ElicitationUrlMode
-                  ["elicitation-1" "https://example.test" {:requestId "request-1"}]
+                  ["elicitation-1" "https://example.test" :requestId "request-1"]
                   {:elicitationId "elicitation-1"
                    :url "https://example.test"
                    :requestId "request-1"})
   (support/ctor-rejects elicitation/->ElicitationUrlMode
-                        [[nil "https://example.test" {:sessionId "session-1"}]
-                         ["elicitation-1" nil {:sessionId "session-1"}]
-                         ["elicitation-1" "https://example.test" {}]]))
+                        [[nil "https://example.test" :sessionId "session-1"]
+                         ["elicitation-1" nil :sessionId "session-1"]
+                         ["elicitation-1" "https://example.test"]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -354,25 +354,32 @@
   (test/testing "accepts a complete form request map"
     (support/builds elicitation/CreateElicitationRequest
                     elicitation/->CreateElicitationRequest
-                    [form-request]
+                    ["Pick a value"
+                     "form"
+                     :requestedSchema {:type "object"}
+                     :sessionId "session-1"]
                     (assoc form-request :_meta nil)))
 
   (test/testing "accepts a complete url request map"
     (support/builds elicitation/CreateElicitationRequest
                     elicitation/->CreateElicitationRequest
-                    [url-request]
+                    ["Sign in"
+                     "url"
+                     :elicitationId "elicitation-1"
+                     :url "https://example.test/elicitation"
+                     :requestId "request-1"]
                     (assoc url-request :_meta nil)))
 
   (test/testing "rejects incomplete requests"
     (support/ctor-rejects elicitation/->CreateElicitationRequest
-                          [[{:message "hello"}]
-                           [{}]
-                           [nil]
-                           ["request"]]))
+                          [["hello"]
+                           ["hello" "form"]
+                           ["hello" "url"]
+                           [nil "form"]]))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [e (support/returned
-             #(elicitation/->CreateElicitationRequest {:message "hello"}))]
+             #(elicitation/->CreateElicitationRequest "hello" "form"))]
       (test/is (instance? clojure.lang.ExceptionInfo e))
       (test/is (false? (m/validate (:schema (ex-data e))
                                    (:value (ex-data e)))))
@@ -408,11 +415,11 @@
                   {:content nil})
   (support/builds elicitation/ElicitationAcceptAction
                   elicitation/->ElicitationAcceptAction
-                  [{:content {"name" "value"}}]
+                  [:content {"name" "value"}]
                   {:content {"name" "value"}})
   (support/ctor-rejects elicitation/->ElicitationAcceptAction
-                        [[{:content "value"}]
-                         [{:content {"name" :value}}]]))
+                        [[:content "value"]
+                         [:content {"name" :value}]]))
 
 
 (test/deftest CreateElicitationResponse-schema
@@ -439,17 +446,16 @@
 (test/deftest ->CreateElicitationResponse
   (support/builds elicitation/CreateElicitationResponse
                   elicitation/->CreateElicitationResponse
-                  [{:action "decline"}]
+                  ["decline"]
                   {:action "decline" :_meta nil})
   (support/builds elicitation/CreateElicitationResponse
                   elicitation/->CreateElicitationResponse
-                  [{:action "accept" :content {"name" "value"}}]
+                  ["accept" :content {"name" "value"}]
                   {:action "accept" :content {"name" "value"} :_meta nil})
   (support/ctor-rejects elicitation/->CreateElicitationResponse
-                        [[{}]
-                         [{:action 1}]
-                         [{:action "accept" :content "value"}]
-                         [{:action "decline" :_meta "meta"}]]))
+                        [[1]
+                         ["accept" :content "value"]
+                         ["decline" :meta "meta"]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -478,11 +484,11 @@
                   {:elicitationId "elicitation-1" :_meta nil})
   (support/builds elicitation/CompleteElicitationNotification
                   elicitation/->CompleteElicitationNotification
-                  ["elicitation-1" {:_meta {:traceId "t-1"}}]
+                  ["elicitation-1" :meta {:traceId "t-1"}]
                   {:elicitationId "elicitation-1"
                    :_meta {:traceId "t-1"}})
   (support/ctor-rejects elicitation/->CompleteElicitationNotification
-                        [[nil] [1] ["elicitation-1" {:_meta "meta"}]]))
+                        [[nil] [1] ["elicitation-1" :meta "meta"]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -517,7 +523,7 @@
                    :description nil
                    :_meta nil})
   (support/builds elicitation/EnumOption elicitation/->EnumOption
-                  ["a" "Option A" {:description "The first option"}]
+                  ["a" "Option A" :description "The first option"]
                   {:const "a"
                    :title "Option A"
                    :description "The first option"
@@ -525,7 +531,7 @@
   (support/ctor-rejects elicitation/->EnumOption
                         [[nil "Option A"]
                          ["a" nil]
-                         ["a" "Option A" {:description 1}]]))
+                         ["a" "Option A" :description 1]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -585,7 +591,7 @@
                    :pattern nil})
   (support/builds elicitation/StringPropertySchema
                   elicitation/->StringPropertySchema
-                  [{:title "Name" :enum ["a"]}]
+                  [:title "Name" :enum ["a"]]
                   {:description nil
                    :enum ["a"]
                    :format nil
@@ -597,10 +603,10 @@
                    :oneOf nil
                    :pattern nil})
   (support/ctor-rejects elicitation/->StringPropertySchema
-                        [[{:enum [1]}]
-                         [{:format "time"}]
-                         [{:minLength -1}]
-                         [{:oneOf [{}]}]] ))
+                        [[:enum [1]]
+                         [:format "time"]
+                         [:minLength -1]
+                         [:oneOf [{}]]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -640,7 +646,7 @@
                    :_meta nil})
   (support/builds elicitation/NumberPropertySchema
                   elicitation/->NumberPropertySchema
-                  [{:minimum 0.5 :maximum 10.5}]
+                  [:minimum 0.5 :maximum 10.5]
                   {:title nil
                    :description nil
                    :minimum 0.5
@@ -648,9 +654,9 @@
                    :default nil
                    :_meta nil})
   (support/ctor-rejects elicitation/->NumberPropertySchema
-                        [[{:minimum "0"}]
-                         [{:maximum :ten}]
-                         [{:default "1.5"}]]))
+                        [[:minimum "0"]
+                         [:maximum :ten]
+                         [:default "1.5"]]))
 
 
 (test/deftest IntegerPropertySchema-schema
@@ -686,7 +692,7 @@
                    :_meta nil})
   (support/builds elicitation/IntegerPropertySchema
                   elicitation/->IntegerPropertySchema
-                  [{:minimum 0 :maximum 10}]
+                  [:minimum 0 :maximum 10]
                   {:title nil
                    :description nil
                    :minimum 0
@@ -694,9 +700,9 @@
                    :default nil
                    :_meta nil})
   (support/ctor-rejects elicitation/->IntegerPropertySchema
-                        [[{:minimum 0.5}]
-                         [{:maximum 10.5}]
-                         [{:default 1.5}]]))
+                        [[:minimum 0.5]
+                         [:maximum 10.5]
+                         [:default 1.5]]))
 
 
 (test/deftest BooleanPropertySchema-schema
@@ -723,15 +729,15 @@
                   {:title nil :description nil :default nil :_meta nil})
   (support/builds elicitation/BooleanPropertySchema
                   elicitation/->BooleanPropertySchema
-                  [{:title "Enabled" :default true}]
+                  [:title "Enabled" :default true]
                   {:title "Enabled"
                    :description nil
                    :default true
                    :_meta nil})
   (support/ctor-rejects elicitation/->BooleanPropertySchema
-                        [[{:default "true"}]
-                         [{:default 1}]
-                         [{:title 1}]]))
+                        [[:default "true"]
+                         [:default 1]
+                         [:title 1]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -760,7 +766,7 @@
                   [["a" "b"]]
                   {:enum ["a" "b"] :_meta nil})
   (support/ctor-rejects elicitation/->StringMultiSelectItems
-                        [[nil] ["a"] [[1]] ["a" {:_meta "meta"}]]))
+                        [[nil] ["a"] [[1]] ["a" :meta "meta"]]))
 
 
 (test/deftest TitledMultiSelectItems-schema
@@ -847,7 +853,7 @@
 (test/deftest ->MultiSelectPropertySchema
   (support/builds elicitation/MultiSelectPropertySchema
                   elicitation/->MultiSelectPropertySchema
-                  [{:items {:type "string" :enum ["a"]}}]
+                  [{:type "string" :enum ["a"]}]
                   {:items {:type "string" :enum ["a"]}
                    :title nil
                    :description nil
@@ -857,7 +863,7 @@
                    :_meta nil})
   (support/builds elicitation/MultiSelectPropertySchema
                   elicitation/->MultiSelectPropertySchema
-                  [{:items {:type "string" :enum ["a"]} :default []}]
+                  [{:type "string" :enum ["a"]} :default []]
                   {:items {:type "string" :enum ["a"]}
                    :default []
                    :title nil
@@ -867,9 +873,9 @@
                    :_meta nil})
   (support/ctor-rejects elicitation/->MultiSelectPropertySchema
                         [[{}]
-                         [{:items nil}]
-                         [{:items {:type "string"}}]
-                         [{:items {:type "string" :enum []} :default [1]}]]))
+                         [nil]
+                         [{:type "string"}]
+                         [{:type "string" :enum []} :default [1]]]))
 
 
 ;; -------------------------------------------------------------------------
@@ -954,9 +960,9 @@
                   {:title nil :required nil :description nil :_meta nil})
   (support/builds elicitation/ElicitationSchema
                   elicitation/->ElicitationSchema
-                  [{:type "object"
-                    :properties {"name" {:type "string"}}
-                    :required ["name"]}]
+                  [:type "object"
+                   :properties {"name" {:type "string"}}
+                   :required ["name"]]
                   {:type "object"
                    :properties {"name" {:type "string"}}
                    :required ["name"]
@@ -966,10 +972,10 @@
   (support/accepts elicitation/ElicitationSchema
                    [{:properties {"name" {:type "object"}}}])
   (support/ctor-rejects elicitation/->ElicitationSchema
-                        [[{:type "array"}]
-                         [{:properties []}]
-                         [{:properties {"name" "string"}}]
-                         [{:required [1]}]] ))
+                        [[:type "array"]
+                         [:properties []]
+                         [:properties {"name" "string"}]
+                         [:required [1]]]))
 
 
 (test/deftest elicitation-schema-composes
@@ -990,9 +996,9 @@
   (test/testing "multi-select and titled item constructors compose"
     (support/accepts elicitation/MultiSelectPropertySchema
                      [(elicitation/->MultiSelectPropertySchema
-                       {:items (elicitation/->TitledMultiSelectItems
-                                [{:const "a" :title "Option A"}])})])
+                       (elicitation/->TitledMultiSelectItems
+                        [{:const "a" :title "Option A"}]))])
     (support/accepts elicitation/MultiSelectPropertySchema
                      [(elicitation/->MultiSelectPropertySchema
-                       {:items (assoc (elicitation/->StringMultiSelectItems ["a" "b"])
-                                      :type "string")})])))
+                       (assoc (elicitation/->StringMultiSelectItems ["a" "b"])
+                              :type "string"))])))

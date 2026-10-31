@@ -51,20 +51,19 @@
                     []
                     {:_meta nil}))
 
-  (test/testing "accepts a map of capabilities"
+  (test/testing "accepts capabilities as keyword arguments"
     (support/builds auth/AuthCapabilities auth/->AuthCapabilities
-                    [{:terminal true :_meta {:traceId "t-1"}}]
+                    [:terminal true :meta {:traceId "t-1"}]
                     {:terminal true :_meta {:traceId "t-1"}}))
 
   (test/testing "rejects invalid capabilities"
     (support/ctor-rejects auth/->AuthCapabilities
-                          [[{:terminal "yes"}]
-                           [{:terminal nil}]
-                           [{:_meta "meta"}]]))
+                          [[:terminal "yes"]
+                           [:meta "meta"]]))
 
   (test/testing "throws an ex-info with schema, value and errors"
     (let [data (support/ex-data-of
-                #(auth/->AuthCapabilities {:terminal "yes"}))]
+                #(auth/->AuthCapabilities :terminal "yes"))]
       (test/is (= {:terminal "yes" :_meta nil} (:value data)))
       (test/is (false? (m/validate (:schema data) (:value data))))
       (test/is (some? (:errors data))))))
@@ -105,14 +104,14 @@
   (test/testing "accepts logout capabilities and metadata"
     (support/builds auth/AgentAuthCapabilities
                     auth/->AgentAuthCapabilities
-                    [{:logout {} :_meta {:traceId "t-1"}}]
+                    [:logout {} :meta {:traceId "t-1"}]
                     {:logout {} :_meta {:traceId "t-1"}}))
 
   (test/testing "rejects malformed logout capabilities"
     (support/ctor-rejects auth/->AgentAuthCapabilities
-                          [[{:logout "yes"}]
-                           [{:logout []}]
-                           [{:_meta "meta"}]])))
+                          [[:logout "yes"]
+                           [:logout []]
+                           [:meta "meta"]])))
 
 
 ;; -------------------------------------------------------------------------
@@ -196,7 +195,8 @@
     (support/builds auth/AuthMethodAgent auth/->AuthMethodAgent
                     ["method-1"
                      "Agent login"
-                     {:description "Sign in" :_meta {:traceId "t-1"}}]
+                     :description "Sign in"
+                     :meta {:traceId "t-1"}]
                     {:id "method-1"
                      :name "Agent login"
                      :description "Sign in"
@@ -206,7 +206,7 @@
     (support/ctor-rejects auth/->AuthMethodAgent
                           [[nil "Agent login"]
                            ["method-1" nil]
-                           ["method-1" "Agent login" {:description 1}]]))
+                           ["method-1" "Agent login" :description 1]]))
 
   (test/testing "requires an id and a name"
     (test/is (thrown? Exception
@@ -264,9 +264,9 @@
     (support/builds auth/AuthMethodTerminal auth/->AuthMethodTerminal
                     ["method-1"
                      "Terminal login"
-                     {:args ["--login"]
-                      :env {"HOME" "/tmp"}
-                      :_meta {:traceId "t-1"}}]
+                     :args ["--login"]
+                     :env {"HOME" "/tmp"}
+                     :meta {:traceId "t-1"}]
                     {:id "method-1"
                      :name "Terminal login"
                      :args ["--login"]
@@ -278,8 +278,8 @@
     (support/ctor-rejects auth/->AuthMethodTerminal
                           [[nil "Terminal login"]
                            ["method-1" nil]
-                           ["method-1" "Terminal login" {:args "--login"}]
-                           ["method-1" "Terminal login" {:env []}]])))
+                           ["method-1" "Terminal login" :args "--login"]
+                           ["method-1" "Terminal login" :env []]])))
 
 
 ;; -------------------------------------------------------------------------
@@ -369,12 +369,12 @@
 
   (test/testing "accepts metadata"
     (support/builds auth/AuthenticateRequest auth/->AuthenticateRequest
-                    ["method-1" {:_meta {:traceId "t-1"}}]
+                    ["method-1" :meta {:traceId "t-1"}]
                     {:methodId "method-1" :_meta {:traceId "t-1"}}))
 
   (test/testing "rejects invalid arguments"
     (support/ctor-rejects auth/->AuthenticateRequest
-                          [[nil] [1] [:method-1] ["method-1" {:_meta "meta"}]])))
+                          [[nil] [1] [:method-1] ["method-1" :meta "meta"]])))
 
 
 ;; -------------------------------------------------------------------------
@@ -406,14 +406,14 @@
     (test/testing (str what " fills the metadata slot")
       (support/builds schema ctor [] {:_meta nil})
       (support/builds schema ctor
-                      [{:_meta {:traceId "t-1"}}]
+                      [:meta {:traceId "t-1"}]
                       {:_meta {:traceId "t-1"}}))
 
     (test/testing (str what " rejects non-map metadata")
       (support/ctor-rejects ctor
-                            [[{:_meta "meta"}]
-                             [{:_meta 42}]])))
+                            [[:meta "meta"]
+                             [:meta 42]])))
   (test/testing "constructor failures name the schema"
-    (let [e (support/returned #(auth/->LogoutResponse {:_meta "meta"}))]
+    (let [e (support/returned #(auth/->LogoutResponse :meta "meta"))]
       (test/is (instance? clojure.lang.ExceptionInfo e))
       (test/is (re-find #"Invalid LogoutResponse" (ex-message e))))))

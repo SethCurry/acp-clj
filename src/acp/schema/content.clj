@@ -55,6 +55,7 @@
   [text & {:keys [annotations meta]}]
   (let [value {:text        text
                :annotations annotations
+               :type "text"
                :_meta       meta}]
     (rt/validate! #'TextContent value "TextContent")))
 

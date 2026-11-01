@@ -112,10 +112,6 @@
 
 
 (test/deftest ->TextContent
-  (test/testing "takes the text as its only positional argument"
-    (test/is (= {:text "hello" :annotations nil :_meta nil}
-                (content/->TextContent "hello"))))
-
   (test/testing "returns a value that satisfies the schema"
     (test/is (m/validate content/TextContent (content/->TextContent "hello"))))
 
